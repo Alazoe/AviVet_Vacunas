@@ -305,6 +305,8 @@ tbody tr:hover td { background: var(--green-light); }
 .enf-tag.tag-encefalomielitis { background: #e0f2f1; color: #004d40; }
 .enf-tag.tag-marek { background: #f1f8e9; color: #33691e; }
 .enf-tag.tag-eds { background: #fff8e1; color: #f57f17; }
+.enf-tag.tag-coriza { background: #fdf3e7; color: #a0522d; }
+.enf-tag.tag-coccidiosis { background: #f1f8e9; color: #558b2f; }
 .tipo-badge { font-size: 11px; padding: 2px 8px; border-radius: 100px; font-weight: 600; }
 .tipo-viva2 { background: #e8f5e9; color: #2e7d32; }
 .tipo-inact { background: #fff3e0; color: #e65100; }
@@ -503,7 +505,9 @@ const ENFERMEDADES = [
   { id: "newcastle",         nombre: "Enfermedad de Newcastle",         desc: "Paramixovirus. Alta mortalidad. Declaración obligatoria." },
   { id: "laringotraqueitis", nombre: "Laringotraqueitis Infecciosa",    desc: "Herpesvirus. Alta morbilidad en vías respiratorias superiores." },
   { id: "viruela",           nombre: "Viruela / Difteroviruela",        desc: "Poxvirus. Lesiones en piel y mucosas. Vacunación por punción alar." },
-  { id: "encefalomielitis",  nombre: "Encefalomielitis Aviar (AE)",     desc: "Picornavirus. Sistema nervioso en pollitos. Vacunación en reproductoras." }
+  { id: "encefalomielitis",  nombre: "Encefalomielitis Aviar (AE)",     desc: "Picornavirus. Sistema nervioso en pollitos. Vacunación en reproductoras." },
+  { id: "coriza",            nombre: "Coriza Infecciosa",               desc: "Avibacterium paragallinarum. Sinusitis, edema facial, caída de postura." },
+  { id: "coccidiosis",       nombre: "Coccidiosis Aviar",               desc: "Eimeria spp. Enteritis hemorrágica. Común en broilers y reemplazos." }
 ];
 
 // Catálogo completo desde fichas técnicas oficiales SAG
@@ -523,7 +527,24 @@ const CATALOGO = [
   { id:"nobilis_nd_clone30",   nombre:"Nobilis ND Clone 30",      tipo:"Viva",       protege:["newcastle"],                  cepa:"Clone 30",                                   via_label:"Oral / Ocular / Nasal",                 edad_min:"Día 1",         programa:"Desde el primer día de vida",                                        resguardo:"Cero días",                               almacenamiento:"2-8°C. No congelar. Diluyente: 15-30°C.", proveedor:"MSD / Intervet Chile",   reg_sag:"1119-B",  postura:false,  notas:"No usar durante postura. Compatible con Nobilis Gumboro D78 e IB Ma5." },
   { id:"newcastle_zoetis",     nombre:"Newcastle B1 LaSota (Zoetis)", tipo:"Viva",   protege:["newcastle"],                  cepa:"B1 Type, LaSota Strain",                     via_label:"Intranasal / Ocular / Agua / Spray",    edad_min:"2 sem (agua) / 4 sem (spray)", programa:"Agua ≥2 sem. Spray revacunación ≥4 sem.",               resguardo:"21 días antes del faenamiento",           almacenamiento:"2-7°C. Protegido de la luz.",             proveedor:"Zoetis",                 reg_sag:"—",       postura:null,   notas:"Puede causar infección ocular leve transitoria en humanos. No permitir contacto con ojos." },
   { id:"lt_vax",               nombre:"LT-VAX (LT-IVAX)",         tipo:"Viva",       protege:["laringotraqueitis"],           cepa:"LT-IVAX",                                    via_label:"Gota ocular",                           edad_min:"4 semanas",     programa:"Inicial: 4 semanas. Revacunación: ≥10 semanas.",                      resguardo:"Cero días",                               almacenamiento:"2-7°C. No congelar. Diluyente: 15-30°C.", proveedor:"MSD / Intervet Chile",   reg_sag:"1194-B",  postura:null,   notas:"Evitar Newcastle o Bronquitis 3 días antes y después. Solo vía ocular." },
-  { id:"nobilis_ae_pox",       nombre:"Nobilis AE+POX",           tipo:"Viva",       protege:["viruela","encefalomielitis"],  cepa:"AE Calnek 1143 + Viruela Pox Gibbs",         via_label:"Punción alar (0.01 mL)",                edad_min:"8-16 semanas",  programa:"Dosis única. No vacunar 28 días previos al inicio de postura.",       resguardo:"Cero días",                               almacenamiento:"2-8°C. No congelar. Proteger de la luz.", proveedor:"MSD / Intervet Chile",   reg_sag:"1148-B",  postura:false,  notas:"Verificar costra en sitio de inoculación a los 7-10 días." }
+  { id:"nobilis_ae_pox",       nombre:"Nobilis AE+POX",           tipo:"Viva",       protege:["viruela","encefalomielitis"],  cepa:"AE Calnek 1143 + Viruela Pox Gibbs",         via_label:"Punción alar (0.01 mL)",                edad_min:"8-16 semanas",  programa:"Dosis única. No vacunar 28 días previos al inicio de postura.",       resguardo:"Cero días",                               almacenamiento:"2-8°C. No congelar. Proteger de la luz.", proveedor:"MSD / Intervet Chile",   reg_sag:"1148-B",  postura:false,  notas:"Verificar costra en sitio de inoculación a los 7-10 días." },
+  // ── Nuevas vacunas desde FTs cargadas 2026-05 ──────────────────────────────
+  { id:"cevac_broiler_nd_k",   nombre:"CEVAC Broiler ND K",        tipo:"Inactivada",  protege:["newcastle"],                   cepa:"NDV-SZ/LaSota ≥50 PD50",                    via_label:"SC / Intramuscular",                    edad_min:"Día 1",         programa:"Dosis única. Postura/reproductoras: revacunar sem 6-8.",             resguardo:"Cero días",                               almacenamiento:"2-8°C. No congelar.",                     proveedor:"Ceva Salud Animal Chile",  reg_sag:"1933-B",  postura:false,  notas:"No administrar durante la postura." },
+  { id:"cevac_gumbo_l",        nombre:"CEVAC Gumbo L",             tipo:"Viva",        protege:["gumboro"],                     cepa:"LIBDV ≥10⁸ TCID50",                         via_label:"Agua de bebida",                        edad_min:"Día 1",         programa:"Según recomendación veterinaria.",                                   resguardo:"Cero días",                               almacenamiento:"2-7°C. Protegido de la luz.",             proveedor:"Ceva Salud Animal Chile",  reg_sag:"1942-B",  postura:null,   notas:"Cepa LIBDV. Aprobado SAG 17-04-2024." },
+  { id:"cevac_transmune",      nombre:"CEVAC Transmune",           tipo:"Complejo inmune", protege:["gumboro"],                  cepa:"Winterfield 2512 G-61",                     via_label:"In ovo / Subcutánea",                   edad_min:"Día 1 / In ovo", programa:"Dosis única. In ovo (18 d embrión) o SC día 1.",                    resguardo:"Cero días",                               almacenamiento:"2-8°C. Protegido de la luz.",             proveedor:"Ceva Salud Animal Chile",  reg_sag:"2193-B",  postura:null,   notas:"Para pollos de engorde. Anticuerpos IBD (anticuerpos maternales IBDV). Aprobado 10-05-2022." },
+  { id:"cevac_corymune_4k",    nombre:"CEVAC Corymune 4 K",        tipo:"Inactivada",  protege:["coriza","salmonella"],          cepa:"S. enteritidis 038-090 + A. paragallinarum ser A/B/C", via_label:"SC / IM (0.5 mL)",             edad_min:"8 semanas",     programa:"1ª dosis: 8-12 sem. Booster: 4 sem después. Completar 4-6 sem antes de postura.", resguardo:"Cero días",                    almacenamiento:"2-8°C. No congelar. Atemperar 15-25°C antes de usar.", proveedor:"Ceva Salud Animal Chile", reg_sag:"2256-B",  postura:false,  notas:"Cubre Coriza (ser A, B, C) y Salmonella enteritidis. No vacunar aves enfermas ni en postura." },
+  { id:"cevac_corymune_7k",    nombre:"CEVAC Corymune 7 K",        tipo:"Inactivada",  protege:["coriza","salmonella","newcastle","bronquitis"], cepa:"NDV-SZ/LaSota + BI M-41 Mass + EDS BB/78 + S. enteritidis + A. paragallinarum A/B/C", via_label:"SC / IM (0.5 mL)", edad_min:"14-18 semanas",  programa:"14-18 sem, 2-4 sem antes de postura. Requiere primovacunación con vivas.",        resguardo:"Cero días",                    almacenamiento:"2-8°C. No congelar.",                     proveedor:"Ceva Salud Animal Chile",  reg_sag:"2272-B",  postura:false,  notas:"Polivalente. Requiere primovacunación previa con vivas BI/NC y con inactivada coriza/salmonella." },
+  { id:"immucox_5",            nombre:"IMMUCOX 5",                  tipo:"Viva",        protege:["coccidiosis"],                 cepa:"E. acervulina + E. brunetti + E. maxima + E. necatrix + E. tenella", via_label:"Oral (agua / aspersión)", edad_min:"Día 1-3",       programa:"Dosis única días 1-3. 2.5 mL/100 aves.",                            resguardo:"Sin vacunar 21 días antes del faenamiento",   almacenamiento:"2-8°C. No congelar.",                     proveedor:"Ceva Salud Animal Chile",  reg_sag:"2599-B",  postura:null,   notas:"5 cepas de Eimeria. Broilers y pollas de reemplazo." },
+  { id:"novamune",             nombre:"Novamune",                   tipo:"Complejo inmune", protege:["gumboro"],                 cepa:"SYZA26 ≥10²·⁶⁵ DIC50",                     via_label:"Subcutánea (0.2 mL) cuello",            edad_min:"Día 1",         programa:"Dosis única SC al día 1. Solo pollitas de reemplazo MDA+.",         resguardo:"Cero días",                               almacenamiento:"Nitrógeno líquido (-196°C). Diluyente: <30°C.", proveedor:"Ceva Salud Animal Chile", reg_sag:"2601-B",  postura:false,  notas:"Para pollitas de reemplazo. No usar 4 semanas antes de postura. Requiere MDA ≥2500 ELISA." },
+  { id:"nobilis_coryza",       nombre:"Nobilis Coryza",             tipo:"Inactivada",  protege:["coriza"],                      cepa:"A. paragallinarum Cepa 083/Spross/H-18 (ser A/B/C)", via_label:"Subcutánea (0.25 mL)",            edad_min:"10 semanas",    programa:"1ª dosis: 10-12 sem. 2ª dosis: ≥4 sem post 1ª, 4-6 sem antes de postura.", resguardo:"Cero días",                    almacenamiento:"2-8°C. No congelar. Proteger de la luz. Usar en 3 h.", proveedor:"MSD / Intervet Chile",    reg_sag:"2691-B",  postura:null,   notas:"Inmunidad 2 sem. Duración 52 sem. Pollas de reemplazo y gallinas ponedoras. Aprobado 13-11-2024." },
+  { id:"nobilis_rismavac",     nombre:"Nobilis Rismavac",           tipo:"Viva (congelada)", protege:["marek"],                  cepa:"HCV Cepa CVI 988 (Rispens) ≥3.0 log TCID50", via_label:"SC cuello / IM pierna / In ovo",       edad_min:"Día 1 / In ovo", programa:"0.2 mL SC o IM, día 1. O in ovo 0.05 mL (embrión 18 días).",       resguardo:"Cero días",                               almacenamiento:"Nitrógeno líquido (-196°C). Diluyente: <30°C.", proveedor:"MSD / Intervet Chile",    reg_sag:"2709-B",  postura:null,   notas:"Serotipo 1, Rispens. Usar dentro de 2 h de preparado. Aprobado 29-08-2025." },
+  { id:"cevac_ibird",          nombre:"Cevac Ibird",                tipo:"Viva",        protege:["bronquitis"],                  cepa:"Cepa 1/96 (variante) ≥2.8 log10 DIE50",    via_label:"Spray / Agua de bebida",                edad_min:"2 semanas",     programa:"Complemento post-primovacunación con cepa Mass. Revacunación según programa.", resguardo:"Cero días",                    almacenamiento:"2-8°C. Protegido de la luz.",             proveedor:"Ceva Salud Animal Chile",  reg_sag:"2710-B",  postura:null,   notas:"Cepa variante 1/96. Amplía protección a cepas variantes europeas. Aprobado 20-05-2025." },
+  { id:"vectormune_hvt_ndv",   nombre:"Vectormune HVT NDV",         tipo:"Vectorizada", protege:["marek","newcastle"],            cepa:"HVT Serotipo 3 + vector Newcastle NDV-SZ",  via_label:"SC cuello / In ovo",                    edad_min:"Día 1 / In ovo", programa:"Dosis única SC día 1 o in ovo.",                                    resguardo:"Cero días",                               almacenamiento:"Nitrógeno líquido.",                       proveedor:"Ceva Salud Animal Chile",  reg_sag:"2725-B",  postura:null,   notas:"Protección simultánea contra Marek y Newcastle. Aprobado 16-10-2025." },
+  { id:"vectormune_hvt_lt",    nombre:"Vectormune HVT LT",          tipo:"Vectorizada", protege:["marek","laringotraqueitis"],    cepa:"HVT Serotipo 3 + vector Laringotraqueitis", via_label:"SC cuello / In ovo",                    edad_min:"Día 1 / In ovo", programa:"Dosis única SC día 1 o in ovo.",                                    resguardo:"Cero días",                               almacenamiento:"Nitrógeno líquido.",                       proveedor:"Ceva Salud Animal Chile",  reg_sag:"2726-B",  postura:null,   notas:"Protección simultánea contra Marek y Laringotraqueitis. Aprobado 21-10-2025." },
+  { id:"vectormune_fp_lt",     nombre:"Vectormune FP-LT",           tipo:"Vectorizada", protege:["viruela","laringotraqueitis"],  cepa:"Viruela aviar Cepa Cutter recombinante rFP/LT ≥10²·⁷ TCID50", via_label:"Punción alar (0.01 mL)",         edad_min:"4 semanas",     programa:"Dosis única por punción alar.",                                     resguardo:"21 días",                                 almacenamiento:"2-8°C. Usar en 2 h de reconstituido.",    proveedor:"Ceva Salud Animal Chile",  reg_sag:"2727-B",  postura:null,   notas:"Vectorizada Fowlpox-LT. Verificar costra 7-10 días. Aprobado 14-11-2025." },
+  { id:"vectormune_fp_lt_ae",  nombre:"Vectormune FP-LT+AE",        tipo:"Vectorizada", protege:["viruela","laringotraqueitis","encefalomielitis"], cepa:"Viruela Cepa Cutter rFP/LT + Encefalomielitis Cepa Calnek", via_label:"Punción alar (0.01 mL)", edad_min:"4 semanas",     programa:"Dosis única. ≥4 sem antes de postura.",                             resguardo:"21 días",                                 almacenamiento:"2-8°C. Usar en 1 h de reconstituido.",    proveedor:"Ceva Salud Animal Chile",  reg_sag:"2733-B",  postura:null,   notas:"Triple: Viruela + Laringotraqueitis + Encefalomielitis. Broilers y pollas reemplazo. Aprobado 18-12-2025." },
+  { id:"cevac_bi_l",           nombre:"CEVAC BI L",                 tipo:"Viva",        protege:["bronquitis","newcastle"],       cepa:"BI Cepa Mass B48 + Newcastle Hitchner B1",  via_label:"Ocular / Spray / Agua de bebida",       edad_min:"Día 1",         programa:"Desde el primer día de vida.",                                      resguardo:"Cero días",                               almacenamiento:"2-8°C. Protegido de la luz.",             proveedor:"Ceva Salud Animal Chile",  reg_sag:"0405-B",  postura:null,   notas:"Combinada BI Mass B48 + Newcastle Hitchner B1. Aprobado 29-05-2024." },
+  { id:"univax_bd",            nombre:"Univax BD",                  tipo:"Viva",        protege:["gumboro"],                     cepa:"ST-12 ≥10²·⁵ TCID50",                      via_label:"Agua de bebida / In ovo",               edad_min:"Día 1 / In ovo", programa:"Según recomendación veterinaria.",                                   resguardo:"21 días",                                 almacenamiento:"2-8°C. No congelar.",                     proveedor:"MSD / Intervet Chile",     reg_sag:"664-B",   postura:null,   notas:"Para pollos y huevos embrionados. Resguardo 21 días. Aprobado 09-07-2022." }
 ];
 
 const VACUNAS = {
@@ -623,6 +644,59 @@ const RANGOS = {
   ],
   nobilis_ae_pox: [
     { label:"Dosis única", min:56,  max:112, default:70,  nota:"8-16 semanas. No vacunar 28 días previos al inicio de postura. Verificar costra 7-10 días post vacunación." }
+  ],
+  // ── Nuevas vacunas 2026-05 ──────────────────────────────────────────────────
+  cevac_broiler_nd_k: [
+    { label:"1ª dosis",           min:1,   max:21,  default:1,   nota:"Desde día 1. No durante la postura." },
+    { label:"Revacunación (opt.)",min:42,  max:56,  default:42,  nota:"Para postura y reproductoras: sem 6-8." }
+  ],
+  cevac_gumbo_l: [
+    { label:"1ª dosis",           min:7,   max:35,  default:14,  nota:"Cepa LIBDV. Según recomendación veterinaria." }
+  ],
+  cevac_transmune: [
+    { label:"Dosis única",        min:1,   max:1,   default:1,   nota:"In ovo (18 d embrión) o SC día 1. Dosis única." }
+  ],
+  cevac_corymune_4k: [
+    { label:"1ª dosis",           min:56,  max:84,  default:70,  nota:"8-12 semanas de edad." },
+    { label:"2ª dosis (booster)", min:84,  max:112, default:98,  nota:"4 semanas post 1ª. Completar 4-6 sem antes de postura." }
+  ],
+  cevac_corymune_7k: [
+    { label:"Dosis única",        min:98,  max:126, default:112, nota:"14-18 semanas. 2-4 sem antes de postura. Requiere primovacunación con vivas." }
+  ],
+  immucox_5: [
+    { label:"Dosis única",        min:1,   max:3,   default:1,   nota:"Días 1-3 de edad. 2.5 mL/100 aves en agua de bebida." }
+  ],
+  novamune: [
+    { label:"Dosis única",        min:1,   max:1,   default:1,   nota:"SC día 1. Requiere MDA ≥2500 ELISA. No usar 4 sem antes de postura." }
+  ],
+  nobilis_coryza: [
+    { label:"1ª dosis",           min:70,  max:84,  default:70,  nota:"10-12 semanas de edad." },
+    { label:"2ª dosis",           min:98,  max:126, default:112, nota:"≥4 sem post 1ª. Completar 4-6 sem antes de postura." }
+  ],
+  nobilis_rismavac: [
+    { label:"Dosis única",        min:1,   max:1,   default:1,   nota:"SC cuello (0.2 mL) o IM pierna, día 1. O in ovo 0.05 mL (18 días embrión)." }
+  ],
+  cevac_ibird: [
+    { label:"1ª dosis",           min:14,  max:70,  default:21,  nota:"Cepa variante 1/96. Usar post primovacunación con cepa Mass." }
+  ],
+  vectormune_hvt_ndv: [
+    { label:"Dosis única",        min:1,   max:1,   default:1,   nota:"SC día 1 o in ovo. Doble protección Marek + Newcastle." }
+  ],
+  vectormune_hvt_lt: [
+    { label:"Dosis única",        min:1,   max:1,   default:1,   nota:"SC día 1 o in ovo. Doble protección Marek + Laringotraqueitis." }
+  ],
+  vectormune_fp_lt: [
+    { label:"Dosis única",        min:28,  max:84,  default:42,  nota:"Punción alar. Completar ≥4 sem antes de postura. Verificar costra 7-10 días." }
+  ],
+  vectormune_fp_lt_ae: [
+    { label:"Dosis única",        min:28,  max:112, default:56,  nota:"Punción alar. Completar ≥4 sem antes de postura." }
+  ],
+  cevac_bi_l: [
+    { label:"1ª dosis",           min:1,   max:21,  default:1,   nota:"Cubre BI + Newcastle. Desde día 1." },
+    { label:"Revacunación",       min:21,  max:70,  default:35,  nota:"Según programa sanitario." }
+  ],
+  univax_bd: [
+    { label:"1ª dosis",           min:1,   max:28,  default:14,  nota:"Cepa ST-12. Resguardo 21 días." }
   ]
 };
 
@@ -1023,19 +1097,15 @@ function switchTab(tab) {
 
 // Vacunas conocidas pero SIN FT cargada aún (agregar aquí nuevas vacunas a medida que se identifiquen)
 const SIN_FT = [
-  { nombre: "Vectormune LT",       tipo: "Vectorizada", proveedor: "Nutringen / Ceva",      protege: ["marek","laringotraqueitis"], reg_sag: "" },
-  { nombre: "Vectormune ND",       tipo: "Vectorizada", proveedor: "Nutringen / Ceva",      protege: ["marek","newcastle"],         reg_sag: "" },
-  { nombre: "Novamune",            tipo: "Complejo inmune", proveedor: "Nutringen / Ceva",  protege: ["gumboro"],                   reg_sag: "" },
-  { nombre: "Vectormune FP LT AE", tipo: "Vectorizada", proveedor: "Nutringen / Ceva",      protege: ["viruela","laringotraqueitis","encefalomielitis"], reg_sag: "" },
-  { nombre: "Avipro Salmonella",   tipo: "Viva",        proveedor: "Encipharm",             protege: ["salmonella"],                reg_sag: "" },
-  { nombre: "Corymune 4",          tipo: "Inactivada",  proveedor: "Nutringen / Ceva",      protege: ["salmonella","coriza"],       reg_sag: "" },
-  { nombre: "Corymune 7",          tipo: "Inactivada",  proveedor: "Nutringen / Ceva",      protege: ["salmonella","coriza","newcastle","bronquitis","eds"], reg_sag: "" },
+  { nombre: "CEVAC MD HVT",     tipo: "Vectorizada",    proveedor: "Ceva Salud Animal Chile",  protege: ["marek"],       reg_sag: "" },
+  { nombre: "Avipro Salmonella",tipo: "Viva",           proveedor: "Encipharm",                protege: ["salmonella"],  reg_sag: "" },
 ];
 
 const ENF_NOMBRES = {
   marek: "Marek", gumboro: "Gumboro", salmonella: "Salmonella",
   bronquitis: "Bronquitis", newcastle: "Newcastle", laringotraqueitis: "Laringotraqueitis",
-  viruela: "Viruela", encefalomielitis: "Encefalomielitis", eds: "EDS", coriza: "Coriza"
+  viruela: "Viruela", encefalomielitis: "Encefalomielitis", eds: "EDS",
+  coriza: "Coriza", coccidiosis: "Coccidiosis"
 };
 
 let estadoFiltro = "todas";
