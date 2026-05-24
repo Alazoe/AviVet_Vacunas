@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendario de Vacunación Aviar</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f5f5f5; color: #333; }
+
+        header {
+            background: #2e7d32;
+            color: white;
+            padding: 18px 32px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        header h1 { font-size: 1.4rem; font-weight: 600; }
+        header span { font-size: 0.9rem; opacity: 0.85; }
+
+        .contenedor { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+
+        .panel {
+            background: white;
+            border-radius: 10px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.08);
+        }
+        .panel h2 { font-size: 1rem; font-weight: 600; color: #2e7d32; margin-bottom: 16px; border-bottom: 2px solid #c8e6c9; padding-bottom: 8px; }
+
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .form-group label { display: block; font-size: 0.85rem; color: #666; margin-bottom: 4px; }
+        .form-group input {
+            width: 100%;
+            padding: 9px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+        .form-group input:focus { outline: none; border-color: #2e7d32; }
+
+        .enfermedades-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        .enfermedad-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 12px 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+        }
+        .enfermedad-card:hover { border-color: #66bb6a; background: #f9fff9; }
+        .enfermedad-card.seleccionada { border-color: #2e7d32; background: #e8f5e9; }
+        .enfermedad-card input[type=checkbox] { display: none; }
+        .enfermedad-card .nombre { font-weight: 600; font-size: 0.9rem; color: #2e7d32; }
+        .enfermedad-card .desc { font-size: 0.75rem; color: #777; margin-top: 4px; line-height: 1.3; }
+        .check-icon { float: right; color: #2e7d32; font-size: 1.1rem; display: none; }
+        .enfermedad-card.seleccionada .check-icon { display: inline; }
+
+        .btn-primary {
+            background: #2e7d32;
+            color: white;
+            border: none;
+            padding: 11px 28px;
+            border-radius: 7px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        .btn-primary:hover { background: #1b5e20; }
+        .btn-secondary {
+            background: white;
+            color: #2e7d32;
+            border: 2px solid #2e7d32;
+            padding: 9px 22px;
+            border-radius: 7px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-secondary:hover { background: #e8f5e9; }
+
+        .acciones { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+        .btn-selec-todo { background: none; border: none; color: #2e7d32; font-size: 0.85rem; cursor: pointer; text-decoration: underline; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        th { background: #2e7d32; color: white; padding: 10px 12px; text-align: left; font-weight: 600; }
+        td { padding: 9px 12px; border-bottom: 1px solid #eee; }
+        tr:nth-child(even) td { background: #f9fff9; }
+        tr:hover td { background: #e8f5e9; }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-via { background: #e3f2fd; color: #1565c0; }
+        .badge-lugar { background: #fff3e0; color: #e65100; }
+
+        .empty { text-align: center; color: #999; padding: 40px; }
+        #resultado { display: none; }
+        .cargando { text-align: center; color: #2e7d32; padding: 20px; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div>
+        <h1>🐔 Calendario de Vacunación Aviar</h1>
+        <span>Generador de programas sanitarios para gallinas</span>
+    </div>
+</header>
+
+<div class="contenedor">
+
+    <div class="panel">
+        <h2>Datos del Lote</h2>
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Nombre del lote</label>
+                <input type="text" id="nombre_lote" placeholder="Ej: Lote Enero 2026" value="">
+            </div>
+            <div class="form-group">
+                <label>Fecha de ingreso (día 1)</label>
+                <input type="date" id="fecha_inicio">
+            </div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <h2>Enfermedades a Cubrir</h2>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <small style="color:#999;">Selecciona las enfermedades que deseas incluir en el programa</small>
+            <button class="btn-selec-todo" onclick="seleccionarTodas()">Seleccionar todas</button>
+        </div>
+        <div class="enfermedades-grid" id="enfermedades-grid">
+            {% for e in enfermedades %}
+            <label class="enfermedad-card" onclick="toggleEnfermedad(this)">
+                <input type="checkbox" name="enfermedades" value="{{ e.id }}">
+                <span class="check-icon">✓</span>
+                <div class="nombre">{{ e.nombre }}</div>
+                <div class="desc">{{ e.descripcion }}</div>
+            </label>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="acciones">
+        <button class="btn-primary" onclick="generarCalendario()">Generar calendario</button>
+    </div>
+
+    <div id="resultado" class="panel" style="margin-top:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <h2 style="border:none; margin:0; padding:0;">Programa Generado</h2>
+            <button class="btn-secondary" onclick="exportarPDF()">⬇ Exportar PDF</button>
+        </div>
+        <div id="tabla-container">
+            <div class="empty">Genera el calendario para ver los resultados</div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    let calendarioActual = [];
+    let datosMeta = {};
+
+    function toggleEnfermedad(label) {
+        const cb = label.querySelector('input[type=checkbox]');
+        cb.checked = !cb.checked;
+        label.classList.toggle('seleccionada', cb.checked);
+    }
+
+    function seleccionarTodas() {
+        const cards = document.querySelectorAll('.enfermedad-card');
+        const todas = Array.from(cards).every(c => c.classList.contains('seleccionada'));
+        cards.forEach(card => {
+            const cb = card.querySelector('input');
+            cb.checked = !todas;
+            card.classList.toggle('seleccionada', !todas);
+        });
+    }
+
+    function generarCalendario() {
+        const enfermedades = Array.from(document.querySelectorAll('input[name=enfermedades]:checked')).map(cb => cb.value);
+        const fecha_inicio = document.getElementById('fecha_inicio').value;
+        const nombre_lote = document.getElementById('nombre_lote').value || 'Lote';
+
+        document.getElementById('resultado').style.display = 'block';
+        document.getElementById('tabla-container').innerHTML = '<div class="cargando">Generando...</div>';
+
+        fetch('/generar', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ enfermedades, fecha_inicio, nombre_lote })
+        })
+        .then(r => r.json())
+        .then(data => {
+            calendarioActual = data.calendario;
+            datosMeta = { nombre_lote: data.nombre_lote, fecha_inicio: data.fecha_inicio };
+            renderTabla(data.calendario);
+        });
+    }
+
+    function renderTabla(calendario) {
+        if (!calendario.length) {
+            document.getElementById('tabla-container').innerHTML = '<div class="empty">No hay vacunas para las enfermedades seleccionadas.</div>';
+            return;
+        }
+
+        const mostrarFecha = calendario.some(r => r.fecha);
+        let html = '<table><thead><tr>';
+        html += '<th>Día</th><th>Sem.</th>';
+        if (mostrarFecha) html += '<th>Fecha</th>';
+        html += '<th>Vacuna</th><th>Protege contra</th><th>Vía</th><th>Lugar</th><th>Proveedor</th><th>Notas</th>';
+        html += '</tr></thead><tbody>';
+
+        calendario.forEach(item => {
+            const via = item.via.replace(/_/g, ' ');
+            html += `<tr>
+                <td><strong>${item.dia}</strong></td>
+                <td>${item.semana}</td>
+                ${mostrarFecha ? `<td>${item.fecha || '-'}</td>` : ''}
+                <td><strong>${item.vacuna}</strong></td>
+                <td>${capitalizar(item.protege_contra.replace(/_/g, ' '))}</td>
+                <td><span class="badge badge-via">${capitalizar(via)}</span></td>
+                <td><span class="badge badge-lugar">${item.lugar}</span></td>
+                <td>${item.proveedor}</td>
+                <td style="font-size:0.78rem;color:#777;">${item.notas || '-'}</td>
+            </tr>`;
+        });
+
+        html += '</tbody></table>';
+        document.getElementById('tabla-container').innerHTML = html;
+    }
+
+    function capitalizar(str) {
+        return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+
+    function exportarPDF() {
+        fetch('/exportar_pdf', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ calendario: calendarioActual, ...datosMeta })
+        })
+        .then(r => r.blob())
+        .then(blob => {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `calendario_vacunacion_${datosMeta.nombre_lote || 'lote'}.pdf`;
+            a.click();
+        });
+    }
+</script>
+</body>
+</html>

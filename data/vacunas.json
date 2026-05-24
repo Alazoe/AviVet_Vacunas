@@ -1,0 +1,159 @@
+{
+  "vacunas": [
+    {
+      "id": "vectormune_lt",
+      "nombre_comercial": "Vectormune LT",
+      "tipo": "vectorizada",
+      "protege_contra": ["marek", "laringotraqueitis"],
+      "via": "subcutanea",
+      "momento": "incubacion",
+      "proveedor": "Nutringen",
+      "notas": "Aplicación en planta de incubación"
+    },
+    {
+      "id": "vectormune_nd",
+      "nombre_comercial": "Vectormune ND",
+      "tipo": "vectorizada",
+      "protege_contra": ["marek", "newcastle"],
+      "via": "subcutanea",
+      "momento": "incubacion",
+      "proveedor": "Nutringen",
+      "notas": "Aplicación en planta de incubación"
+    },
+    {
+      "id": "novamune",
+      "nombre_comercial": "Novamune",
+      "tipo": "complejo_inmune",
+      "protege_contra": ["gumboro"],
+      "via": "subcutanea",
+      "momento": "incubacion",
+      "proveedor": "Nutringen",
+      "notas": "Cepa SYZA 26. Aplicación en planta de incubación"
+    },
+    {
+      "id": "gumbo_l",
+      "nombre_comercial": "Gumbo L",
+      "tipo": "viva",
+      "protege_contra": ["gumboro"],
+      "via": "agua_bebida",
+      "momento": "campo",
+      "proveedor": "Nutringen",
+      "notas": "Alternativa a campo si no se aplicó en incubación"
+    },
+    {
+      "id": "mass_l",
+      "nombre_comercial": "Mass L",
+      "tipo": "viva",
+      "protege_contra": ["bronquitis"],
+      "cepa": "Massachusetts",
+      "via": "spray_agua",
+      "momento": "campo",
+      "proveedor": "Nutringen",
+      "notas": "Spray en incubación o campo, o agua de bebida"
+    },
+    {
+      "id": "ibird",
+      "nombre_comercial": "Ibrd",
+      "tipo": "viva",
+      "protege_contra": ["bronquitis"],
+      "cepa": "Variante 1/96",
+      "via": "spray_agua",
+      "momento": "campo",
+      "proveedor": "Nutringen",
+      "notas": "Bronquitis variante"
+    },
+    {
+      "id": "bi_l",
+      "nombre_comercial": "Bi L",
+      "tipo": "viva",
+      "protege_contra": ["bronquitis", "newcastle"],
+      "cepa": "Massachusetts + B1",
+      "via": "spray_agua",
+      "momento": "campo",
+      "proveedor": "Nutringen",
+      "notas": "Combinada bronquitis Massachusetts + Newcastle B1"
+    },
+    {
+      "id": "vectormune_fp_lt_ae",
+      "nombre_comercial": "Vectormune FP LT AE",
+      "tipo": "vectorizada",
+      "protege_contra": ["viruela", "laringotraqueitis", "encefalomielitis"],
+      "via": "puncion_alar",
+      "momento": "campo",
+      "proveedor": "Nutringen",
+      "notas": "Difteroviruela + Laringotraqueitis + Encefalomielitis aviar"
+    },
+    {
+      "id": "nd_ib_eds_k",
+      "nombre_comercial": "ND IB EDS K",
+      "tipo": "inactivada",
+      "protege_contra": ["newcastle", "bronquitis", "eds"],
+      "via": "intramuscular",
+      "momento": "campo",
+      "proveedor": "Nutringen",
+      "notas": "Triple inactivada Newcastle + Bronquitis Massachusetts + Síndrome caída postura"
+    },
+    {
+      "id": "corymune_4",
+      "nombre_comercial": "Corymune 4",
+      "tipo": "inactivada",
+      "protege_contra": ["salmonella", "coriza"],
+      "via": "intramuscular",
+      "momento": "campo",
+      "proveedor": "Nutringen",
+      "notas": "Salmonella Enteritidis + Coriza A, B y C"
+    },
+    {
+      "id": "corymune_7",
+      "nombre_comercial": "Corymune 7",
+      "tipo": "inactivada",
+      "protege_contra": ["salmonella", "coriza", "newcastle", "bronquitis", "eds"],
+      "via": "intramuscular",
+      "momento": "campo",
+      "proveedor": "Nutringen",
+      "notas": "Combinada 7 enfermedades. Salmonella Enteritidis + Coriza + Newcastle + Bronquitis Mass + Síndrome caída postura"
+    },
+    {
+      "id": "avipro_salmonella",
+      "nombre_comercial": "Avipro Salmonella",
+      "tipo": "viva",
+      "protege_contra": ["salmonella"],
+      "via": "spray_agua",
+      "momento": "incubacion_campo",
+      "proveedor": "Encipharm",
+      "notas": "Salmonella Enteritidis. Planta incubación o campo"
+    }
+  ],
+  "enfermedades": [
+    {
+      "id": "marek",
+      "nombre": "Enfermedad de Marek",
+      "descripcion": "Herpesvirus. Provoca tumores, parálisis y muerte. Vacunación obligatoria en incubación."
+    },
+    {
+      "id": "gumboro",
+      "nombre": "Gumboro (Bursitis Infecciosa)",
+      "descripcion": "Birnavirus. Inmunosupresor. Afecta Bolsa de Fabricio. Crítico en pollitos."
+    },
+    {
+      "id": "salmonella",
+      "nombre": "Salmonella",
+      "descripcion": "Bacteria. Salmonella Enteritidis. Zoonosis, relevante para inocuidad alimentaria."
+    },
+    {
+      "id": "bronquitis",
+      "nombre": "Bronquitis Infecciosa (BI)",
+      "descripcion": "Coronavirus aviar. Afecta vías respiratorias y producción. Múltiples cepas (Mass, variantes)."
+    },
+    {
+      "id": "newcastle",
+      "nombre": "Enfermedad de Newcastle",
+      "descripcion": "Paramixovirus. Alta mortalidad y pérdidas productivas. Enfermedad de declaración obligatoria."
+    },
+    {
+      "id": "laringotraqueitis",
+      "nombre": "Laringotraqueitis Infecciosa (LTI)",
+      "descripcion": "Herpesvirus. Afecta vías respiratorias superiores. Alta morbilidad."
+    }
+  ]
+}
