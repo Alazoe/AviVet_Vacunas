@@ -1,267 +1,1110 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calendario de Vacunación Aviar</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Segoe UI', sans-serif; background: #f5f5f5; color: #333; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calendario de Vacunación — AviVet</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<style>
+:root {
+  --bg: #f7f5f0;
+  --white: #ffffff;
+  --dark: #111510;
+  --green: #2a5430;
+  --green-mid: #3d7a42;
+  --green-light: #e4ede5;
+  --green-accent: #5c9e61;
+  --text: #1c2118;
+  --muted: #6a7565;
+  --border: #ddd8cc;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
-        header {
-            background: #2e7d32;
-            color: white;
-            padding: 18px 32px;
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-        header h1 { font-size: 1.4rem; font-weight: 600; }
-        header span { font-size: 0.9rem; opacity: 0.85; }
+/* HEADER */
+header {
+  background: var(--dark);
+  padding: 20px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.header-logo {
+  font-family: 'Fraunces', serif;
+  font-size: 20px;
+  font-weight: 900;
+  color: #fff;
+  text-decoration: none;
+  letter-spacing: -0.5px;
+}
+.header-logo span { color: var(--green-accent); font-style: italic; }
+.header-title {
+  color: rgba(255,255,255,0.6);
+  font-size: 13px;
+}
 
-        .contenedor { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+/* MAIN */
+.contenedor { max-width: 1050px; margin: 0 auto; padding: 28px 16px 60px; }
 
-        .panel {
-            background: white;
-            border-radius: 10px;
-            padding: 24px;
-            margin-bottom: 20px;
-            box-shadow: 0 1px 4px rgba(0,0,0,.08);
-        }
-        .panel h2 { font-size: 1rem; font-weight: 600; color: #2e7d32; margin-bottom: 16px; border-bottom: 2px solid #c8e6c9; padding-bottom: 8px; }
+.panel {
+  background: var(--white);
+  border-radius: 14px;
+  padding: 24px;
+  margin-bottom: 18px;
+  border: 1px solid var(--border);
+}
+.panel-title {
+  font-family: 'Fraunces', serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--green);
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--green-light);
+}
 
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-        .form-group label { display: block; font-size: 0.85rem; color: #666; margin-bottom: 4px; }
-        .form-group input {
-            width: 100%;
-            padding: 9px 12px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 0.95rem;
-        }
-        .form-group input:focus { outline: none; border-color: #2e7d32; }
+/* FORM */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media(max-width:600px){ .form-grid { grid-template-columns: 1fr; } }
+.form-group label { display: block; font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.form-group input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  background: var(--bg);
+  color: var(--text);
+  transition: border-color 0.2s;
+}
+.form-group input:focus { outline: none; border-color: var(--green-accent); }
 
-        .enfermedades-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 10px;
-        }
-        .enfermedad-card {
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 12px 14px;
-            cursor: pointer;
-            transition: all 0.2s;
-            user-select: none;
-        }
-        .enfermedad-card:hover { border-color: #66bb6a; background: #f9fff9; }
-        .enfermedad-card.seleccionada { border-color: #2e7d32; background: #e8f5e9; }
-        .enfermedad-card input[type=checkbox] { display: none; }
-        .enfermedad-card .nombre { font-weight: 600; font-size: 0.9rem; color: #2e7d32; }
-        .enfermedad-card .desc { font-size: 0.75rem; color: #777; margin-top: 4px; line-height: 1.3; }
-        .check-icon { float: right; color: #2e7d32; font-size: 1.1rem; display: none; }
-        .enfermedad-card.seleccionada .check-icon { display: inline; }
+/* ENFERMEDADES */
+.enf-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 10px;
+}
+.enf-card {
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: all 0.18s;
+  user-select: none;
+  position: relative;
+}
+.enf-card:hover { border-color: var(--green-accent); background: #f4faf4; }
+.enf-card.on { border-color: var(--green); background: var(--green-light); }
+.enf-card input { display: none; }
+.enf-check {
+  position: absolute;
+  top: 10px; right: 12px;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px;
+  color: transparent;
+  background: white;
+  transition: all 0.18s;
+}
+.enf-card.on .enf-check { background: var(--green); border-color: var(--green); color: white; }
+.enf-nombre { font-size: 13px; font-weight: 600; color: var(--green); padding-right: 28px; line-height: 1.3; }
+.enf-desc { font-size: 11px; color: var(--muted); margin-top: 5px; line-height: 1.4; }
 
-        .btn-primary {
-            background: #2e7d32;
-            color: white;
-            border: none;
-            padding: 11px 28px;
-            border-radius: 7px;
-            font-size: 0.95rem;
-            cursor: pointer;
-            font-weight: 600;
-            transition: background 0.2s;
-        }
-        .btn-primary:hover { background: #1b5e20; }
-        .btn-secondary {
-            background: white;
-            color: #2e7d32;
-            border: 2px solid #2e7d32;
-            padding: 9px 22px;
-            border-radius: 7px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-        .btn-secondary:hover { background: #e8f5e9; }
+.selec-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.selec-row small { font-size: 12px; color: var(--muted); }
+.btn-text { background: none; border: none; color: var(--green); font-size: 12px; cursor: pointer; font-weight: 600; text-decoration: underline; }
 
-        .acciones { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-        .btn-selec-todo { background: none; border: none; color: #2e7d32; font-size: 0.85rem; cursor: pointer; text-decoration: underline; }
+/* BOTONES */
+.acciones { display: flex; gap: 12px; margin-top: 4px; flex-wrap: wrap; }
+.btn-primary {
+  background: var(--green);
+  color: white;
+  border: none;
+  padding: 12px 28px;
+  border-radius: 100px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+}
+.btn-primary:hover:not(:disabled) { background: var(--green-mid); transform: translateY(-1px); }
+.btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-pdf {
+  background: white;
+  color: var(--green);
+  border: 2px solid var(--green);
+  padding: 10px 22px;
+  border-radius: 100px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s;
+  display: none;
+}
+.btn-pdf:hover { background: var(--green-light); }
 
-        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-        th { background: #2e7d32; color: white; padding: 10px 12px; text-align: left; font-weight: 600; }
-        td { padding: 9px 12px; border-bottom: 1px solid #eee; }
-        tr:nth-child(even) td { background: #f9fff9; }
-        tr:hover td { background: #e8f5e9; }
+/* RESULTADO */
+#resultado { display: none; }
+.result-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid var(--green-light); }
+.result-title { font-family: 'Fraunces', serif; font-size: 15px; font-weight: 700; color: var(--green); }
+.result-meta { font-size: 12px; color: var(--muted); }
 
-        .badge {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-        .badge-via { background: #e3f2fd; color: #1565c0; }
-        .badge-lugar { background: #fff3e0; color: #e65100; }
+/* TABLA */
+.tabla-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border); }
+table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 600px; }
+thead th {
+  background: var(--green);
+  color: white;
+  padding: 11px 13px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 12px;
+  white-space: nowrap;
+}
+tbody td { padding: 10px 13px; border-bottom: 1px solid #f0ede8; vertical-align: top; }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:nth-child(even) td { background: #fafaf8; }
+tbody tr:hover td { background: var(--green-light); }
+.dia-cell { font-weight: 700; color: var(--green); font-size: 15px; text-align: center; }
+.sem-cell { text-align: center; color: var(--muted); font-size: 12px; }
+.fecha-cell { font-size: 12px; color: var(--muted); white-space: nowrap; }
+.vacuna-cell { font-weight: 600; }
+.prot-cell { font-size: 12px; }
 
-        .empty { text-align: center; color: #999; padding: 40px; }
-        #resultado { display: none; }
-        .cargando { text-align: center; color: #2e7d32; padding: 20px; }
-    </style>
+.badge {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.badge-sc { background: #e8f4fd; color: #1565c0; }
+.badge-agua { background: #e3f8f0; color: #1b6e45; }
+.badge-spray { background: #fff8e1; color: #8c6400; }
+.badge-im { background: #fce8f3; color: #880e4f; }
+.badge-alar { background: #f3e8ff; color: #5b2d8e; }
+.badge-ocular { background: #e8f5f8; color: #00607a; }
+
+.nota-final { font-size: 11px; color: var(--muted); margin-top: 12px; font-style: italic; }
+
+.empty { text-align: center; color: var(--muted); padding: 40px 20px; font-size: 14px; }
+
+/* POSTURA RECURRENTE */
+.postura-box {
+  background: var(--green-light);
+  border: 1px solid #b7d9ba;
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-top: 14px;
+  font-size: 13px;
+  color: var(--green);
+}
+.postura-box strong { font-weight: 700; }
+
+/* TABS */
+.tabs-bar {
+  background: var(--dark);
+  display: flex;
+  gap: 4px;
+  padding: 0 24px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+}
+.tab-btn {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.5);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 12px 20px;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.18s;
+}
+.tab-btn:hover { color: rgba(255,255,255,0.85); }
+.tab-btn.active { color: var(--green-accent); border-bottom-color: var(--green-accent); font-weight: 600; }
+
+/* TAB CONTENT */
+#tab-calendario { display: block; }
+#tab-estado { display: none; }
+
+/* ESTADO FT */
+.estado-filtros { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; align-items: center; }
+.filtro-btn {
+  background: white;
+  border: 1.5px solid var(--border);
+  border-radius: 100px;
+  padding: 6px 16px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s;
+  color: var(--muted);
+}
+.filtro-btn:hover { border-color: var(--green-accent); color: var(--green); }
+.filtro-btn.active { background: var(--green); color: white; border-color: var(--green); }
+.estado-resumen { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+.resumen-chip {
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.chip-total { background: #f0f0f0; color: #444; }
+.chip-con { background: #e8f5e9; color: #2e7d32; }
+.chip-sin { background: #fce8e8; color: #c62828; }
+.estado-tabla-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); }
+.estado-tabla { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 700px; }
+.estado-tabla thead th {
+  background: var(--green);
+  color: white;
+  padding: 11px 14px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.estado-tabla tbody td { padding: 10px 14px; border-bottom: 1px solid #f0ede8; vertical-align: middle; }
+.estado-tabla tbody tr:last-child td { border-bottom: none; }
+.estado-tabla tbody tr:nth-child(even) td { background: #fafaf8; }
+.estado-tabla tbody tr:hover td { background: var(--green-light); }
+.ft-si { color: #2e7d32; font-weight: 700; font-size: 15px; }
+.ft-no { color: #c62828; font-weight: 700; font-size: 15px; }
+.enf-tag {
+  display: inline-block;
+  background: #e8f5e9;
+  color: #1b5e20;
+  border-radius: 100px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  margin: 1px 2px 1px 0;
+  white-space: nowrap;
+}
+.enf-tag.tag-salmonella { background: #fff3e0; color: #e65100; }
+.enf-tag.tag-bronquitis { background: #e3f2fd; color: #1565c0; }
+.enf-tag.tag-newcastle { background: #f3e5f5; color: #6a1b9a; }
+.enf-tag.tag-gumboro { background: #e8eaf6; color: #283593; }
+.enf-tag.tag-laringotraqueitis { background: #fce4ec; color: #880e4f; }
+.enf-tag.tag-viruela { background: #efebe9; color: #4e342e; }
+.enf-tag.tag-encefalomielitis { background: #e0f2f1; color: #004d40; }
+.enf-tag.tag-marek { background: #f1f8e9; color: #33691e; }
+.enf-tag.tag-eds { background: #fff8e1; color: #f57f17; }
+.tipo-badge { font-size: 11px; padding: 2px 8px; border-radius: 100px; font-weight: 600; }
+.tipo-viva2 { background: #e8f5e9; color: #2e7d32; }
+.tipo-inact { background: #fff3e0; color: #e65100; }
+.reg-cell { font-family: monospace; font-size: 12px; color: var(--muted); }
+.sin-reg { color: #bbb; font-style: italic; font-size: 11px; }
+
+/* CATÁLOGO */
+.cat-group { margin-bottom: 20px; }
+.cat-group-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--green);
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--green-light);
+}
+.cat-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
+.cat-card {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  background: var(--bg);
+  font-size: 12px;
+}
+.cat-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+.cat-nombre { font-weight: 700; font-size: 13px; color: var(--dark); }
+.cat-tipo { font-size: 10px; padding: 2px 8px; border-radius: 100px; font-weight: 600; }
+.tipo-viva { background: #e8f5e9; color: #2e7d32; }
+.tipo-inactivada { background: #fff3e0; color: #e65100; }
+.cat-row { display: flex; gap: 6px; margin-bottom: 4px; color: var(--muted); }
+.cat-label { font-weight: 600; color: var(--text); min-width: 80px; flex-shrink: 0; }
+.cat-reg { font-size: 10px; color: var(--muted); margin-top: 6px; }
+.cat-notas { font-size: 11px; color: var(--muted); margin-top: 6px; font-style: italic; border-top: 1px solid var(--border); padding-top: 6px; }
+.postura-ok { color: #2e7d32; font-weight: 600; }
+.postura-no { color: #c62828; font-weight: 600; }
+
+/* PASO 3 */
+.paso-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:var(--green-accent); margin-bottom:12px; }
+.vac-selector-enf { margin-bottom:24px; }
+.vac-enf-title { font-size:14px; font-weight:700; color:var(--dark); margin-bottom:10px; display:flex; align-items:center; gap:8px; }
+.vac-lab-group { margin-bottom:10px; }
+.vac-lab-name { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--muted); margin-bottom:6px; }
+.vac-radio-cards { display:flex; flex-wrap:wrap; gap:8px; }
+.vac-radio-card { border:2px solid var(--border); border-radius:10px; padding:10px 14px; cursor:pointer; transition:all 0.18s; display:flex; align-items:flex-start; gap:10px; min-width:200px; max-width:280px; }
+.vac-radio-card:hover { border-color:var(--green-accent); }
+.vac-radio-card.selected { border-color:var(--green); background:var(--green-light); }
+.vac-radio-card input[type=radio] { margin-top:3px; accent-color:var(--green); flex-shrink:0; }
+.vac-card-info { flex:1; }
+.vac-card-nombre { font-size:13px; font-weight:700; color:var(--dark); }
+.vac-card-cepa { font-size:11px; color:var(--muted); }
+.vac-card-via { font-size:11px; color:var(--muted); }
+.vac-dias-panel { background:#f8fdf8; border:1px solid #c8e6c9; border-radius:8px; padding:14px 16px; margin-top:10px; }
+.vac-dias-title { font-size:12px; font-weight:700; color:var(--green); margin-bottom:10px; }
+.dosis-row { display:flex; align-items:center; gap:12px; margin-bottom:10px; flex-wrap:wrap; }
+.dosis-row label { font-size:12px; font-weight:600; color:var(--text); min-width:90px; }
+.dosis-row input[type=range] { flex:1; min-width:120px; accent-color:var(--green); }
+.dosis-row input[type=number] { width:64px; padding:4px 8px; border:1.5px solid var(--border); border-radius:6px; font-size:13px; font-weight:700; text-align:center; }
+.dosis-semana { font-size:11px; color:var(--muted); white-space:nowrap; }
+.dosis-nota { font-size:11px; color:var(--muted); font-style:italic; width:100%; }
+.warn-box { background:#fff8e1; border:1px solid #ffe082; border-radius:8px; padding:10px 14px; font-size:12px; color:#8c6400; margin-top:8px; }
+.warn-box::before { content:"⚠ "; font-weight:700; }
+.cubre-tambien { font-size:11px; background:#e8f5e9; color:#2e7d32; border-radius:6px; padding:4px 10px; margin-top:6px; display:inline-block; font-weight:600; }
+.enf-cubierta-label { font-size:12px; color:var(--muted); font-style:italic; padding:8px 0; }
+</style>
 </head>
 <body>
 
 <header>
-    <div>
-        <h1>🐔 Calendario de Vacunación Aviar</h1>
-        <span>Generador de programas sanitarios para gallinas</span>
-    </div>
+  <a href="https://avivet.cl" class="header-logo">Avi<span>Vet</span></a>
+  <span class="header-title">Calendario de Vacunación Aviar</span>
 </header>
+
+<div class="tabs-bar">
+  <button class="tab-btn active" onclick="switchTab('calendario')">Generar Calendario</button>
+  <button class="tab-btn" onclick="switchTab('estado')">Estado de Fichas Técnicas</button>
+</div>
 
 <div class="contenedor">
 
-    <div class="panel">
-        <h2>Datos del Lote</h2>
-        <div class="form-grid">
-            <div class="form-group">
-                <label>Nombre del lote</label>
-                <input type="text" id="nombre_lote" placeholder="Ej: Lote Enero 2026" value="">
-            </div>
-            <div class="form-group">
-                <label>Fecha de ingreso (día 1)</label>
-                <input type="date" id="fecha_inicio">
-            </div>
-        </div>
+<div id="tab-calendario">
+
+  <!-- PASO 1: DATOS DEL LOTE -->
+  <div class="panel">
+    <div class="panel-title">Datos del Lote</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Nombre del lote</label>
+        <input type="text" id="nombre_lote" placeholder="Ej: Lote Enero 2026">
+      </div>
+      <div class="form-group">
+        <label>Fecha de ingreso (día 1)</label>
+        <input type="date" id="fecha_inicio">
+      </div>
+    </div>
+  </div>
+
+  <!-- PASO 2: ENFERMEDADES -->
+  <div class="panel">
+    <div class="panel-title">Enfermedades a Cubrir</div>
+    <div class="selec-row">
+      <small>Selecciona las enfermedades que deseas incluir en el programa</small>
+      <button class="btn-text" onclick="seleccionarTodas()">Seleccionar todas</button>
+    </div>
+    <div class="enf-grid" id="enf-grid"></div>
+  </div>
+
+  <!-- PASO 3: SELECCIÓN DE VACUNAS -->
+  <div class="panel" id="panel-vacunas" style="display:none; margin-top:0;">
+    <div class="panel-title">Selección de Vacunas y Días de Aplicación</div>
+    <div id="vacuna-selectors"></div>
+  </div>
+
+  <!-- ACCIONES -->
+  <div class="acciones">
+    <button class="btn-primary" id="btn-generar" onclick="generar()" disabled>Generar calendario</button>
+    <button class="btn-pdf" id="btn-pdf" onclick="exportarPDF()">⬇ Exportar PDF</button>
+  </div>
+
+  <!-- RESULTADO -->
+  <div class="panel" id="resultado" style="margin-top:18px;">
+    <div class="result-header">
+      <div>
+        <div class="result-title" id="result-title">Programa de Vacunación</div>
+        <div class="result-meta" id="result-meta"></div>
+      </div>
+    </div>
+    <div class="tabla-wrap">
+      <table id="tabla-cal">
+        <thead id="tabla-head"></thead>
+        <tbody id="tabla-body"></tbody>
+      </table>
+    </div>
+    <div class="postura-box" id="postura-box" style="display:none;">
+      <strong>🔁 Durante postura:</strong> Refuerzo de Bronquitis Infecciosa cada 56 días alternando <em>Mass L</em> / <em>Ibrd</em> por vía Spray o Agua de bebida.
+    </div>
+    <p class="nota-final">* El programa puede variar según zona geográfica, historia sanitaria del plantel y disponibilidad de vacunas.</p>
+  </div>
+
+  <!-- CATÁLOGO DE VACUNAS -->
+  <div class="panel" id="catalogo-panel" style="display:none; margin-top:18px;">
+    <div class="panel-title">Vacunas Disponibles — Fichas Técnicas SAG</div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:16px;">Vacunas registradas en Chile para las enfermedades seleccionadas, según fichas técnicas oficiales.</p>
+    <div id="catalogo-grid"></div>
+  </div>
+
+</div><!-- /tab-calendario -->
+
+<!-- ── TAB ESTADO FT ─────────────────────────────────────────── -->
+<div id="tab-estado">
+  <div class="panel">
+    <div class="panel-title">Estado de Fichas Técnicas</div>
+
+    <div class="estado-resumen" id="resumen-chips"></div>
+
+    <div class="estado-filtros">
+      <span style="font-size:12px;color:var(--muted);font-weight:600;">Filtrar:</span>
+      <button class="filtro-btn active" onclick="filtrarEstado('todas',this)">Todas</button>
+      <button class="filtro-btn" onclick="filtrarEstado('con_ft',this)">Con FT ✓</button>
+      <button class="filtro-btn" onclick="filtrarEstado('sin_ft',this)">Sin FT ✗</button>
+      <button class="filtro-btn" onclick="filtrarEstado('viva',this)">Vivas</button>
+      <button class="filtro-btn" onclick="filtrarEstado('inactivada',this)">Inactivadas</button>
     </div>
 
-    <div class="panel">
-        <h2>Enfermedades a Cubrir</h2>
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-            <small style="color:#999;">Selecciona las enfermedades que deseas incluir en el programa</small>
-            <button class="btn-selec-todo" onclick="seleccionarTodas()">Seleccionar todas</button>
-        </div>
-        <div class="enfermedades-grid" id="enfermedades-grid">
-            {% for e in enfermedades %}
-            <label class="enfermedad-card" onclick="toggleEnfermedad(this)">
-                <input type="checkbox" name="enfermedades" value="{{ e.id }}">
-                <span class="check-icon">✓</span>
-                <div class="nombre">{{ e.nombre }}</div>
-                <div class="desc">{{ e.descripcion }}</div>
-            </label>
-            {% endfor %}
-        </div>
+    <div class="estado-tabla-wrap">
+      <table class="estado-tabla" id="estado-tabla">
+        <thead>
+          <tr>
+            <th>Nombre Comercial</th>
+            <th>Tipo</th>
+            <th>Laboratorio / Proveedor</th>
+            <th>Enfermedades</th>
+            <th>Reg. SAG</th>
+            <th style="text-align:center;">FT</th>
+          </tr>
+        </thead>
+        <tbody id="estado-tbody"></tbody>
+      </table>
     </div>
+    <p style="font-size:11px;color:var(--muted);margin-top:12px;font-style:italic;">
+      * Para agregar vacunas sin FT, sube el PDF a la carpeta fichas_tecnicas/ del proyecto.
+    </p>
+  </div>
+</div><!-- /tab-estado -->
 
-    <div class="acciones">
-        <button class="btn-primary" onclick="generarCalendario()">Generar calendario</button>
-    </div>
-
-    <div id="resultado" class="panel" style="margin-top:20px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-            <h2 style="border:none; margin:0; padding:0;">Programa Generado</h2>
-            <button class="btn-secondary" onclick="exportarPDF()">⬇ Exportar PDF</button>
-        </div>
-        <div id="tabla-container">
-            <div class="empty">Genera el calendario para ver los resultados</div>
-        </div>
-    </div>
-
-</div>
+</div><!-- /contenedor -->
 
 <script>
-    let calendarioActual = [];
-    let datosMeta = {};
+// ─── BASE DE DATOS ────────────────────────────────────────────────────────────
+const ENFERMEDADES = [
+  { id: "marek",             nombre: "Enfermedad de Marek",             desc: "Herpesvirus. Tumores, parálisis y muerte. Vacunación en incubación." },
+  { id: "gumboro",           nombre: "Gumboro (Bursitis Infecciosa)",   desc: "Birnavirus inmunosupresor. Afecta Bolsa de Fabricio en pollitos." },
+  { id: "salmonella",        nombre: "Salmonella",                      desc: "Salmonella Enteritidis / typhimurium. Zoonosis — inocuidad alimentaria." },
+  { id: "bronquitis",        nombre: "Bronquitis Infecciosa (BI)",      desc: "Coronavirus aviar. Afecta vías respiratorias y producción. Múltiples cepas." },
+  { id: "newcastle",         nombre: "Enfermedad de Newcastle",         desc: "Paramixovirus. Alta mortalidad. Declaración obligatoria." },
+  { id: "laringotraqueitis", nombre: "Laringotraqueitis Infecciosa",    desc: "Herpesvirus. Alta morbilidad en vías respiratorias superiores." },
+  { id: "viruela",           nombre: "Viruela / Difteroviruela",        desc: "Poxvirus. Lesiones en piel y mucosas. Vacunación por punción alar." },
+  { id: "encefalomielitis",  nombre: "Encefalomielitis Aviar (AE)",     desc: "Picornavirus. Sistema nervioso en pollitos. Vacunación en reproductoras." }
+];
 
-    function toggleEnfermedad(label) {
-        const cb = label.querySelector('input[type=checkbox]');
-        cb.checked = !cb.checked;
-        label.classList.toggle('seleccionada', cb.checked);
+// Catálogo completo desde fichas técnicas oficiales SAG
+const CATALOGO = [
+  { id:"primun_salmonella_e",  nombre:"Primun Salmonella E",      tipo:"Viva",       protege:["salmonella"],                 cepa:"CAL10 Sm+/RIF+/Ssq-",                       via_label:"Oral",                                  edad_min:"Día 1",         programa:"3-4 dosis. Inmunidad desde 14 días post 1ª dosis.",                          resguardo:"Carne 21 d (1ª-3ª), 14 d (4ª). Huevos: 0 d (4ª dosis)", almacenamiento:"2-8°C. No congelar. Proteger de la luz.", proveedor:"Agrovet / Calier",       reg_sag:"2607-B",  postura:false,  notas:"Para pollas de reemplazo. Reduce colonización órganos internos y excreción de S. Enteritidis." },
+  { id:"nobilis_salenvac_t",   nombre:"Nobilis Salenvac T",       tipo:"Inactivada",  protege:["salmonella"],                 cepa:"S. enteritidis Cepa 109 + S. typhimurium DT104", via_label:"Intramuscular (0.5 mL)",              edad_min:"6 semanas",     programa:"2 dosis: 1ª desde sem 6; 2ª a las 4-16 sem post 1ª.",               resguardo:"Cero días",                               almacenamiento:"2-8°C. No congelar.",                     proveedor:"MSD / Intervet Chile",   reg_sag:"2177-B",  postura:false,  notas:"Cubre SE y S. typhimurium. Inmunidad pasiva en progenie. No usar durante postura." },
+  { id:"cevac_ibd_l",          nombre:"CEVAC IBD L",              tipo:"Viva",       protege:["gumboro"],                    cepa:"Winterfield 2512, G61",                      via_label:"Agua de bebida",                        edad_min:"Día 1",         programa:"Según recomendación veterinaria",                                    resguardo:"Cero días",                               almacenamiento:"2-8°C. Protegido de la luz.",             proveedor:"Ceva / Agrovet",         reg_sag:"376-B",   postura:null,   notas:"Presentación: 20×1.000 y 20×5.000 dosis." },
+  { id:"nobilis_gumboro_d78",  nombre:"Nobilis Gumboro D78",      tipo:"Viva",       protege:["gumboro"],                    cepa:"D78",                                        via_label:"Oral / Spray / Óculo-nasal",            edad_min:"Día 1 (spray) / 7-28 d (oral)", programa:"Día 7-28 oral. Si AM variables: 2 dosis con 1 semana intervalo.",    resguardo:"Cero días",                               almacenamiento:"2-8°C. No congelar. Diluyente: 15-30°C.", proveedor:"MSD / Intervet Chile",   reg_sag:"1124-B",  postura:null,   notas:"Compatible con Nobilis IB Ma5 y ND Clone 30." },
+  { id:"bronipra_1",           nombre:"Bronipra 1",               tipo:"Viva",       protege:["bronquitis"],                 cepa:"H120 (Massachusetts)",                       via_label:"Agua de bebida / Nebulización",         edad_min:"Día 1",         programa:"1 dosis/ave desde el 1er día",                                       resguardo:"Cero días",                               almacenamiento:"2-8°C. No congelar.",                     proveedor:"Veterquímica / HIPRA",   reg_sag:"0003-B",  postura:false,  notas:"No administrar durante postura. No coadministrar con otros productos." },
+  { id:"nobilis_ib_ma5",       nombre:"Nobilis IB Ma5",           tipo:"Viva",       protege:["bronquitis"],                 cepa:"Ma5 Massachusetts",                          via_label:"Spray / Ocular-nasal / Agua",           edad_min:"Día 1",         programa:"Desde día 1. Ponedoras: día 1 + revacunación.",                       resguardo:"Cero días",                               almacenamiento:"2-8°C. No congelar. Diluyente: 15-30°C.", proveedor:"MSD / Intervet Chile",   reg_sag:"1155-B",  postura:true,   notas:"No causa reacciones adversas durante postura. Compatible con Nobilis Gumboro D78 y ND Clone 30." },
+  { id:"nobilis_ma5_clone30",  nombre:"Nobilis Ma5 + Clone 30",   tipo:"Viva",       protege:["bronquitis","newcastle"],      cepa:"BI Ma5 Mass + Newcastle Clone 30",           via_label:"Oral / Spray / Ocular / Nasal",         edad_min:"Día 1",         programa:"Desde el primer día de vida",                                        resguardo:"Cero días",                               almacenamiento:"2-8°C. No congelar. Diluyente: 15-30°C.", proveedor:"MSD / Intervet Chile",   reg_sag:"1158-B",  postura:false,  notas:"Combinada BI + Newcastle en una sola aplicación. No usar durante postura." },
+  { id:"nobilis_ib_nd_eds",    nombre:"Nobilis IB + ND + EDS",    tipo:"Inactivada",  protege:["bronquitis","newcastle"],      cepa:"BI Mass + Newcastle Clone 30 + EDS BC14",    via_label:"IM / SC (0.5 mL)",                      edad_min:"16 semanas",    programa:"1 dosis. 16-20 sem, mínimo 4 sem antes de postura. Requiere primovacunación viva.", resguardo:"Cero días",                               almacenamiento:"2-8°C. No congelar. Usar en 3 h de abierto.",  proveedor:"MSD / Intervet Chile",   reg_sag:"1149-B",  postura:false,  notas:"Triple inactivada. Mejores resultados 6+ semanas después de primovacunación viva." },
+  { id:"cevac_mass_l",          nombre:"CEVAC MASS L",             tipo:"Viva",        protege:["bronquitis"],                  cepa:"Mass B48 (Massachusetts)",                   via_label:"Agua / Intraocular / Spray",            edad_min:"Día 1",         programa:"Según recomendación veterinaria",                                    resguardo:"Cero días",                               almacenamiento:"2-8°C. Protegido de la luz.",             proveedor:"Ceva Salud Animal",      reg_sag:"299-B",   postura:null,   notas:"Cepa Mass B48. 20×1.000 y 20×2.500 dosis. Aprobado SAG 17-01-2026." },
+  { id:"cevac_nd_ib_eds_k",    nombre:"Cevac ND IB EDS K",        tipo:"Inactivada",  protege:["bronquitis","newcastle"],      cepa:"Newcastle NDV-SZ/LaSota + BI M-41 Mass + Adenovirus EDS BB/78", via_label:"SC (pescuezo) / IM (pechuga o muslo, 0.5 mL)", edad_min:"16-20 semanas (3-4 sem antes de postura)", programa:"0.5 mL/ave. Para aves previamente inmunizadas con vivas contra BI y Newcastle.", resguardo:"Cero días",               almacenamiento:"2-8°C. No congelar. Atemperar 15-25°C.",  proveedor:"Ceva Salud Animal",      reg_sag:"352-B",   postura:false,  notas:"Adyuvante oleoso. No mezclar con otras vacunas. Inyección accidental en humanos: atención médica inmediata. Usar en 24 h. Aprobado SAG 19-12-2024." },
+  { id:"hipraviar_s",          nombre:"Hipraviar S",              tipo:"Viva",       protege:["newcastle"],                  cepa:"La Sota",                                    via_label:"Agua de bebida / Nebulización",         edad_min:"Día 1",         programa:"1 dosis/ave desde el 1er día",                                       resguardo:"Cero días",                               almacenamiento:"2-8°C. No congelar.",                     proveedor:"Veterquímica / HIPRA",   reg_sag:"0018-B",  postura:false,  notas:"No administrar durante postura. Usar mascarilla y lentes al aplicar por spray." },
+  { id:"nobilis_nd_c2",        nombre:"Nobilis ND C2",            tipo:"Viva",       protege:["newcastle"],                  cepa:"C2",                                         via_label:"Óculo-nasal / Spray",                   edad_min:"Día 1",         programa:"Dosis única. Revacunar 2-3 semanas después con vacuna viva lentogénica.", resguardo:"Cero días",                              almacenamiento:"2-8°C. No congelar. Diluyente: 15-30°C.", proveedor:"MSD / Intervet Chile",   reg_sag:"2008-B",  postura:false,  notas:"No vacunar durante postura. Usar mascarilla y lentes protectores." },
+  { id:"nobilis_nd_clone30",   nombre:"Nobilis ND Clone 30",      tipo:"Viva",       protege:["newcastle"],                  cepa:"Clone 30",                                   via_label:"Oral / Ocular / Nasal",                 edad_min:"Día 1",         programa:"Desde el primer día de vida",                                        resguardo:"Cero días",                               almacenamiento:"2-8°C. No congelar. Diluyente: 15-30°C.", proveedor:"MSD / Intervet Chile",   reg_sag:"1119-B",  postura:false,  notas:"No usar durante postura. Compatible con Nobilis Gumboro D78 e IB Ma5." },
+  { id:"newcastle_zoetis",     nombre:"Newcastle B1 LaSota (Zoetis)", tipo:"Viva",   protege:["newcastle"],                  cepa:"B1 Type, LaSota Strain",                     via_label:"Intranasal / Ocular / Agua / Spray",    edad_min:"2 sem (agua) / 4 sem (spray)", programa:"Agua ≥2 sem. Spray revacunación ≥4 sem.",               resguardo:"21 días antes del faenamiento",           almacenamiento:"2-7°C. Protegido de la luz.",             proveedor:"Zoetis",                 reg_sag:"—",       postura:null,   notas:"Puede causar infección ocular leve transitoria en humanos. No permitir contacto con ojos." },
+  { id:"lt_vax",               nombre:"LT-VAX (LT-IVAX)",         tipo:"Viva",       protege:["laringotraqueitis"],           cepa:"LT-IVAX",                                    via_label:"Gota ocular",                           edad_min:"4 semanas",     programa:"Inicial: 4 semanas. Revacunación: ≥10 semanas.",                      resguardo:"Cero días",                               almacenamiento:"2-7°C. No congelar. Diluyente: 15-30°C.", proveedor:"MSD / Intervet Chile",   reg_sag:"1194-B",  postura:null,   notas:"Evitar Newcastle o Bronquitis 3 días antes y después. Solo vía ocular." },
+  { id:"nobilis_ae_pox",       nombre:"Nobilis AE+POX",           tipo:"Viva",       protege:["viruela","encefalomielitis"],  cepa:"AE Calnek 1143 + Viruela Pox Gibbs",         via_label:"Punción alar (0.01 mL)",                edad_min:"8-16 semanas",  programa:"Dosis única. No vacunar 28 días previos al inicio de postura.",       resguardo:"Cero días",                               almacenamiento:"2-8°C. No congelar. Proteger de la luz.", proveedor:"MSD / Intervet Chile",   reg_sag:"1148-B",  postura:false,  notas:"Verificar costra en sitio de inoculación a los 7-10 días." }
+];
+
+const VACUNAS = {
+  vectormune_lt:      { nombre: "Vectormune LT",      protege: ["marek","laringotraqueitis"], via: "subcutanea",  lugar: "Planta incubación",  proveedor: "Nutringen" },
+  novamune:           { nombre: "Novamune",            protege: ["gumboro"],                  via: "subcutanea",  lugar: "Planta incubación",  proveedor: "Nutringen", notas: "Cepa SYZA 26" },
+  avipro_salmonella:  { nombre: "Avipro Salmonella",  protege: ["salmonella"],               via: "spray",       lugar: "Planta incubación",  proveedor: "Encipharm" },
+  mass_l:             { nombre: "Mass L",              protege: ["bronquitis"],               via: "spray_agua",  lugar: "Incubación o campo", proveedor: "Nutringen", notas: "Cepa Massachusetts" },
+  ibird:              { nombre: "Ibrd",                protege: ["bronquitis"],               via: "spray_agua",  lugar: "Campo",              proveedor: "Nutringen", notas: "Cepa Variante 1/96" },
+  bi_l_49:            { nombre: "Bi L",                protege: ["bronquitis","newcastle"],   via: "spray_agua",  lugar: "Campo",              proveedor: "Nutringen", notas: "Mass + Newcastle B1" },
+  bi_l_77:            { nombre: "Bi L",                protege: ["bronquitis","newcastle"],   via: "spray_agua",  lugar: "Campo",              proveedor: "Nutringen", notas: "Mass + Newcastle B1" },
+  vectormune_fp:      { nombre: "Vectormune FP LT AE",protege: ["laringotraqueitis"],        via: "puncion_alar",lugar: "Campo",              proveedor: "Nutringen", notas: "Difteroviruela + LT + Encefalomielitis" },
+  ibird_98:           { nombre: "Ibrd",                protege: ["bronquitis"],               via: "spray_agua",  lugar: "Campo",              proveedor: "Nutringen", notas: "Cepa Variante 1/96" },
+  corymune_7:         { nombre: "Corymune 7",          protege: ["salmonella","newcastle","bronquitis"], via: "intramuscular", lugar: "Campo", proveedor: "Nutringen", notas: "Pechuga. Salmonella + Coriza + NC + BI + EDS" },
+  avipro_42:          { nombre: "Avipro Salmonella",  protege: ["salmonella"],               via: "agua_bebida", lugar: "Campo",              proveedor: "Encipharm" }
+};
+
+const PROGRAMA = [
+  { dia:1,  sem:1,  id:"vectormune_lt"     },
+  { dia:1,  sem:1,  id:"novamune"          },
+  { dia:1,  sem:1,  id:"avipro_salmonella" },
+  { dia:1,  sem:1,  id:"mass_l"            },
+  { dia:21, sem:3,  id:"ibird"             },
+  { dia:42, sem:6,  id:"avipro_42"         },
+  { dia:49, sem:7,  id:"bi_l_49"           },
+  { dia:70, sem:10, id:"vectormune_fp"     },
+  { dia:77, sem:11, id:"bi_l_77"           },
+  { dia:98, sem:14, id:"ibird_98"          },
+  { dia:105,sem:15, id:"corymune_7"        }
+];
+
+const VIA_LABELS = {
+  subcutanea:   { label: "Subcutánea",    css: "badge-sc"    },
+  spray:        { label: "Spray",         css: "badge-spray" },
+  spray_agua:   { label: "Spray / Agua",  css: "badge-spray" },
+  agua_bebida:  { label: "Agua bebida",   css: "badge-agua"  },
+  intramuscular:{ label: "Intramuscular", css: "badge-im"    },
+  puncion_alar: { label: "Punción alar",  css: "badge-alar"  },
+  ocular:       { label: "Ocular",        css: "badge-ocular"}
+};
+
+// ─── RANGOS DE DÍAS POR VACUNA (según fichas técnicas) ───────────────────────
+const RANGOS = {
+  primun_salmonella_e: [
+    { label:"1ª dosis",    min:1,   max:21,  default:1,   nota:"" },
+    { label:"2ª dosis",    min:22,  max:70,  default:42,  nota:"Mínimo 3 semanas post 1ª dosis" },
+    { label:"3ª dosis",    min:63,  max:112, default:70,  nota:"Mínimo 3 semanas post 2ª dosis" }
+  ],
+  nobilis_salenvac_t: [
+    { label:"1ª dosis",    min:42,  max:98,  default:70,  nota:"Desde las 6 semanas de edad" },
+    { label:"2ª dosis",    min:70,  max:140, default:98,  nota:"4-16 semanas post 1ª dosis. No usar durante postura." }
+  ],
+  cevac_ibd_l: [
+    { label:"1ª dosis",    min:7,   max:28,  default:14,  nota:"" }
+  ],
+  nobilis_gumboro_d78: [
+    { label:"1ª dosis",    min:1,   max:28,  default:14,  nota:"Oral: días 7-28. Ocular/spray: desde día 1" },
+    { label:"2ª dosis (opt.)", min:7, max:35, default:21, nota:"Opcional si anticuerpos maternos variables (1 semana post 1ª)" }
+  ],
+  cevac_mass_l: [
+    { label:"1ª dosis",    min:1,   max:21,  default:1,   nota:"" }
+  ],
+  bronipra_1: [
+    { label:"1ª dosis",    min:1,   max:21,  default:1,   nota:"No usar durante postura" }
+  ],
+  nobilis_ib_ma5: [
+    { label:"1ª dosis",    min:1,   max:14,  default:1,   nota:"" },
+    { label:"Revacunación", min:21,  max:70,  default:35,  nota:"Intervalo y momento según situación local" }
+  ],
+  nobilis_ma5_clone30: [
+    { label:"1ª dosis",    min:1,   max:21,  default:1,   nota:"Cubre BI + Newcastle. No usar durante postura." }
+  ],
+  nobilis_ib_nd_eds: [
+    { label:"Dosis única", min:112, max:140, default:120, nota:"16-20 semanas. Mínimo 28 días antes del inicio de postura." }
+  ],
+  cevac_nd_ib_eds_k: [
+    { label:"Dosis única", min:112, max:140, default:120, nota:"16-20 semanas. Requiere primovacunación con vacunas vivas." }
+  ],
+  hipraviar_s: [
+    { label:"1ª dosis",    min:1,   max:21,  default:1,   nota:"No usar durante postura" },
+    { label:"Revacunación", min:21,  max:63,  default:35,  nota:"Intervalo según programa sanitario del plantel" }
+  ],
+  nobilis_nd_c2: [
+    { label:"1ª dosis",    min:1,   max:14,  default:1,   nota:"" },
+    { label:"Revacunación", min:14,  max:35,  default:21,  nota:"Revacunar 2-3 semanas después con vacuna viva lentogénica" }
+  ],
+  nobilis_nd_clone30: [
+    { label:"1ª dosis",    min:1,   max:21,  default:1,   nota:"No usar durante postura" },
+    { label:"Revacunación", min:21,  max:63,  default:35,  nota:"Intervalo según programa sanitario del plantel" }
+  ],
+  newcastle_zoetis: [
+    { label:"1ª dosis",    min:14,  max:49,  default:14,  nota:"Agua: desde 2 semanas. Spray: desde 4 semanas." },
+    { label:"Revacunación", min:28,  max:70,  default:35,  nota:"" }
+  ],
+  lt_vax: [
+    { label:"1ª dosis",    min:28,  max:49,  default:28,  nota:"4-7 semanas. Evitar Newcastle o Bronquitis 3 días antes y después." },
+    { label:"Revacunación", min:70,  max:98,  default:70,  nota:"Desde las 10 semanas de edad" }
+  ],
+  nobilis_ae_pox: [
+    { label:"Dosis única", min:56,  max:112, default:70,  nota:"8-16 semanas. No vacunar 28 días previos al inicio de postura. Verificar costra 7-10 días post vacunación." }
+  ]
+};
+
+// ─── RENDER ENFERMEDADES ──────────────────────────────────────────────────────
+const grid = document.getElementById("enf-grid");
+ENFERMEDADES.forEach(e => {
+  const card = document.createElement("div");
+  card.className = "enf-card";
+  card.innerHTML = `
+    <input type="checkbox" value="${e.id}" style="display:none;">
+    <div class="enf-check">✓</div>
+    <div class="enf-nombre">${e.nombre}</div>
+    <div class="enf-desc">${e.desc}</div>`;
+  card.addEventListener("click", () => {
+    const cb = card.querySelector("input");
+    cb.checked = !cb.checked;
+    card.classList.toggle("on", cb.checked);
+    actualizarSelectores();
+  });
+  grid.appendChild(card);
+});
+
+function seleccionarTodas() {
+  const cards = document.querySelectorAll(".enf-card");
+  const todasOn = [...cards].every(c => c.classList.contains("on"));
+  cards.forEach(card => {
+    const cb = card.querySelector("input");
+    cb.checked = !todasOn;
+    card.classList.toggle("on", !todasOn);
+  });
+  actualizarSelectores();
+}
+
+// ─── PASO 3: Selector de vacunas por enfermedad ───────────────────────────────
+function actualizarSelectores() {
+  const sel = new Set([...document.querySelectorAll(".enf-card.on input")].map(cb => cb.value));
+  const panel = document.getElementById("panel-vacunas");
+  const container = document.getElementById("vacuna-selectors");
+
+  if (sel.size === 0) { panel.style.display = "none"; actualizarBotonGenerar(); return; }
+  panel.style.display = "block";
+
+  let html = "";
+  ENFERMEDADES.filter(e => sel.has(e.id)).forEach(enf => {
+    // Vacunas disponibles para esta enfermedad
+    const vacs = CATALOGO.filter(v => v.protege.includes(enf.id));
+    if (!vacs.length) {
+      html += `<div class="vac-selector-enf" id="enf-selector-${enf.id}">
+        <div class="vac-enf-title"><span>${enf.nombre}</span></div>
+        <div style="font-size:12px;color:var(--muted);font-style:italic;padding:8px 0 12px;">
+          Sin vacunas con ficha técnica SAG en el catálogo. Se aplica en planta de incubación según programa del proveedor.
+        </div>
+      </div>`;
+      return;
     }
 
-    function seleccionarTodas() {
-        const cards = document.querySelectorAll('.enfermedad-card');
-        const todas = Array.from(cards).every(c => c.classList.contains('seleccionada'));
-        cards.forEach(card => {
-            const cb = card.querySelector('input');
-            cb.checked = !todas;
-            card.classList.toggle('seleccionada', !todas);
-        });
+    // Agrupar por laboratorio (primer segmento del proveedor)
+    const labs = {};
+    vacs.forEach(v => {
+      const lab = v.proveedor.split("/")[0].trim();
+      if (!labs[lab]) labs[lab] = [];
+      labs[lab].push(v);
+    });
+
+    html += `<div class="vac-selector-enf" id="enf-selector-${enf.id}">
+      <div class="vac-enf-title">
+        <span>${enf.nombre}</span>
+        <span id="cubierta-badge-${enf.id}" style="display:none;" class="enf-cubierta-label">— cubierta por vacuna combinada</span>
+      </div>
+      <div id="enf-cards-${enf.id}">`;
+
+    Object.entries(labs).forEach(([lab, vacLab]) => {
+      html += `<div class="vac-lab-group">
+        <div class="vac-lab-name">${lab}</div>
+        <div class="vac-radio-cards">`;
+
+      vacLab.forEach(v => {
+        const combinaLabel = v.protege.length > 1
+          ? `<div class="cubre-tambien">También cubre: ${v.protege.filter(p => p !== enf.id).map(p => ENF_NOMBRES[p] || p).join(", ")}</div>`
+          : "";
+        html += `<label class="vac-radio-card" id="card-${enf.id}-${v.id}" onclick="selectVacuna('${enf.id}','${v.id}',${JSON.stringify(v.protege)})">
+          <input type="radio" name="vac-${enf.id}" value="${v.id}">
+          <div class="vac-card-info">
+            <div class="vac-card-nombre">${v.nombre}</div>
+            <div class="vac-card-cepa">${v.cepa || ""}</div>
+            <div class="vac-card-via">${v.via_label}</div>
+            ${combinaLabel}
+            ${v.postura === false ? '<div style="font-size:10px;color:#c62828;font-weight:700;margin-top:4px;">✗ No usar en postura</div>' : ""}
+          </div>
+        </label>`;
+      });
+
+      html += `</div></div>`;
+    });
+
+    html += `</div>
+      <div id="dias-panel-${enf.id}" style="display:none;"></div>
+    </div>`;
+  });
+
+  container.innerHTML = html;
+  actualizarBotonGenerar();
+}
+
+function selectVacuna(enfId, vacId, todosProtege) {
+  // Marcar card seleccionada
+  document.querySelectorAll(`[id^="card-${enfId}-"]`).forEach(c => c.classList.remove("selected"));
+  const card = document.getElementById(`card-${enfId}-${vacId}`);
+  if (card) { card.classList.add("selected"); card.querySelector("input").checked = true; }
+
+  // Cubrir enfermedades adicionales de vacunas combinadas
+  const sel = new Set([...document.querySelectorAll(".enf-card.on input")].map(cb => cb.value));
+  todosProtege.forEach(enf => {
+    if (enf !== enfId && sel.has(enf)) {
+      const badge = document.getElementById(`cubierta-badge-${enf}`);
+      const cards = document.getElementById(`enf-cards-${enf}`);
+      if (badge) badge.style.display = "inline";
+      if (cards) cards.style.display = "none";
     }
+  });
 
-    function generarCalendario() {
-        const enfermedades = Array.from(document.querySelectorAll('input[name=enfermedades]:checked')).map(cb => cb.value);
-        const fecha_inicio = document.getElementById('fecha_inicio').value;
-        const nombre_lote = document.getElementById('nombre_lote').value || 'Lote';
+  // Mostrar sliders de días
+  const rangos = RANGOS[vacId];
+  if (!rangos) return;
+  const panel = document.getElementById(`dias-panel-${enfId}`);
+  panel.style.display = "block";
 
-        document.getElementById('resultado').style.display = 'block';
-        document.getElementById('tabla-container').innerHTML = '<div class="cargando">Generando...</div>';
+  let html = `<div class="vac-dias-panel"><div class="vac-dias-title">Días de aplicación</div>`;
+  rangos.forEach((r, i) => {
+    const inputId = `dia-${enfId}-${vacId}-${i}`;
+    html += `<div class="dosis-row">
+      <label>${r.label}</label>
+      <input type="range" min="${r.min}" max="${r.max}" value="${r.default}"
+        oninput="syncDia('${inputId}',this.value)"
+        id="range-${inputId}">
+      <input type="number" min="${r.min}" max="${r.max}" value="${r.default}"
+        oninput="syncDia('${inputId}',this.value)"
+        id="num-${inputId}">
+      <span class="dosis-semana" id="sem-${inputId}">Sem. ${Math.ceil(r.default / 7)}</span>
+    </div>`;
+    if (r.nota) html += `<div class="dosis-nota">${r.nota}</div>`;
+  });
 
-        fetch('/generar', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ enfermedades, fecha_inicio, nombre_lote })
-        })
-        .then(r => r.json())
-        .then(data => {
-            calendarioActual = data.calendario;
-            datosMeta = { nombre_lote: data.nombre_lote, fecha_inicio: data.fecha_inicio };
-            renderTabla(data.calendario);
-        });
-    }
+  // Advertencias específicas
+  if (vacId === "nobilis_ib_nd_eds" || vacId === "cevac_nd_ib_eds_k") {
+    html += `<div class="warn-box">Requiere primovacunación previa con vacunas vivas contra Bronquitis y Newcastle.</div>`;
+  }
+  if (vacId === "lt_vax") {
+    html += `<div class="warn-box">No aplicar dentro de los 3 días antes o después de vacunas Newcastle o Bronquitis.</div>`;
+  }
+  if (vacId === "nobilis_ae_pox") {
+    html += `<div class="warn-box">No vacunar en los 28 días previos al inicio de postura.</div>`;
+  }
 
-    function renderTabla(calendario) {
-        if (!calendario.length) {
-            document.getElementById('tabla-container').innerHTML = '<div class="empty">No hay vacunas para las enfermedades seleccionadas.</div>';
-            return;
-        }
+  html += `</div>`;
+  panel.innerHTML = html;
+  actualizarBotonGenerar();
+}
 
-        const mostrarFecha = calendario.some(r => r.fecha);
-        let html = '<table><thead><tr>';
-        html += '<th>Día</th><th>Sem.</th>';
-        if (mostrarFecha) html += '<th>Fecha</th>';
-        html += '<th>Vacuna</th><th>Protege contra</th><th>Vía</th><th>Lugar</th><th>Proveedor</th><th>Notas</th>';
-        html += '</tr></thead><tbody>';
+function syncDia(id, val) {
+  const n = parseInt(val);
+  const r = document.getElementById(`range-${id}`);
+  const num = document.getElementById(`num-${id}`);
+  const sem = document.getElementById(`sem-${id}`);
+  if (r) r.value = n;
+  if (num) num.value = n;
+  if (sem) sem.textContent = `Sem. ${Math.ceil(n / 7)}`;
+}
 
-        calendario.forEach(item => {
-            const via = item.via.replace(/_/g, ' ');
-            html += `<tr>
-                <td><strong>${item.dia}</strong></td>
-                <td>${item.semana}</td>
-                ${mostrarFecha ? `<td>${item.fecha || '-'}</td>` : ''}
-                <td><strong>${item.vacuna}</strong></td>
-                <td>${capitalizar(item.protege_contra.replace(/_/g, ' '))}</td>
-                <td><span class="badge badge-via">${capitalizar(via)}</span></td>
-                <td><span class="badge badge-lugar">${item.lugar}</span></td>
-                <td>${item.proveedor}</td>
-                <td style="font-size:0.78rem;color:#777;">${item.notas || '-'}</td>
-            </tr>`;
-        });
+function actualizarBotonGenerar() {
+  const diasPanels = document.querySelectorAll("[id^='dias-panel-']");
+  const hayVacunas = diasPanels.length > 0 &&
+    [...diasPanels].some(p => p.style.display !== "none");
+  const btn = document.getElementById("btn-generar");
+  if (btn) btn.disabled = !hayVacunas;
+}
 
-        html += '</tbody></table>';
-        document.getElementById('tabla-container').innerHTML = html;
-    }
+// ─── GENERAR CALENDARIO ───────────────────────────────────────────────────────
+let calendarioActual = [];
 
-    function capitalizar(str) {
-        return str.charAt(0).toUpperCase() + str.slice(1);
-    }
+function generar() {
+  const sel = new Set([...document.querySelectorAll(".enf-card.on input")].map(cb => cb.value));
+  const fechaStr = document.getElementById("fecha_inicio").value;
+  const lote = document.getElementById("nombre_lote").value || "Lote";
+  const fechaInicio = fechaStr ? new Date(fechaStr + "T12:00:00") : null;
 
-    function exportarPDF() {
-        fetch('/exportar_pdf', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ calendario: calendarioActual, ...datosMeta })
-        })
-        .then(r => r.blob())
-        .then(blob => {
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `calendario_vacunacion_${datosMeta.nombre_lote || 'lote'}.pdf`;
-            a.click();
-        });
-    }
+  calendarioActual = [];
+
+  // Recolectar vacunas y días seleccionados por el usuario
+  ENFERMEDADES.filter(e => sel.has(e.id)).forEach(enf => {
+    const radio = document.querySelector(`input[name="vac-${enf.id}"]:checked`);
+    if (!radio) return;
+    const vacId = radio.value;
+    const vac = CATALOGO.find(v => v.id === vacId);
+    const rangos = RANGOS[vacId];
+    if (!vac || !rangos) return;
+
+    // Evitar duplicados (vacuna combinada que ya fue agregada)
+    const yaAgregado = calendarioActual.some(c => c.vacuna_id === vacId);
+    if (yaAgregado) return;
+
+    rangos.forEach((r, i) => {
+      const inputId = `dia-${enf.id}-${vacId}-${i}`;
+      const numInput = document.getElementById(`num-${inputId}`);
+      const dia = numInput ? parseInt(numInput.value) : r.default;
+      const semana = Math.ceil(dia / 7);
+      let fecha = "";
+      if (fechaInicio) {
+        const d = new Date(fechaInicio);
+        d.setDate(d.getDate() + dia - 1);
+        fecha = d.toLocaleDateString("es-CL", { day:"2-digit", month:"2-digit", year:"numeric" });
+      }
+      calendarioActual.push({
+        dia, semana, fecha,
+        vacuna: vac.nombre,
+        vacuna_id: vacId,
+        dosis_label: r.label,
+        protege: vac.protege.map(p => ENF_NOMBRES[p] || p).join(", "),
+        via: vac.via_label,
+        proveedor: vac.proveedor,
+        reg_sag: vac.reg_sag,
+        notas: vac.notas || ""
+      });
+    });
+  });
+
+  calendarioActual.sort((a, b) => a.dia - b.dia);
+  renderTabla(calendarioActual, !!fechaStr, lote, fechaStr, sel.has("bronquitis"));
+  renderCatalogo(sel);
+}
+
+function renderTabla(cal, conFecha, lote, fechaStr, hayBronquitis) {
+  if (!cal.length) {
+    document.getElementById("resultado").style.display = "none";
+    document.getElementById("btn-pdf").style.display = "none";
+    return;
+  }
+
+  document.getElementById("resultado").style.display = "block";
+  document.getElementById("btn-pdf").style.display = "inline-block";
+  document.getElementById("result-title").textContent = `Programa de Vacunación — ${lote}`;
+  document.getElementById("result-meta").textContent = fechaStr
+    ? `Fecha inicio: ${new Date(fechaStr + "T12:00:00").toLocaleDateString("es-CL", {day:"2-digit",month:"long",year:"numeric"})}`
+    : "Sin fecha definida";
+
+  const head = document.getElementById("tabla-head");
+  const body = document.getElementById("tabla-body");
+
+  head.innerHTML = `<tr>
+    <th>Día</th><th>Sem.</th>${conFecha ? "<th>Fecha</th>" : ""}
+    <th>Vacuna</th><th>Dosis</th><th>Protege contra</th><th>Vía / Administración</th><th>Proveedor</th><th>Reg. SAG</th><th>Notas</th>
+  </tr>`;
+
+  body.innerHTML = cal.map(r => {
+    return `<tr>
+      <td class="dia-cell">${r.dia}</td>
+      <td class="sem-cell">${r.semana}</td>
+      ${conFecha ? `<td class="fecha-cell">${r.fecha}</td>` : ""}
+      <td class="vacuna-cell">${r.vacuna}</td>
+      <td style="font-size:12px;color:var(--muted);">${r.dosis_label}</td>
+      <td class="prot-cell">${r.protege}</td>
+      <td style="font-size:12px;">${r.via}</td>
+      <td style="font-size:12px;">${r.proveedor}</td>
+      <td style="font-family:monospace;font-size:11px;color:var(--muted);">${r.reg_sag || "—"}</td>
+      <td style="font-size:11px;color:var(--muted);">${r.notas}</td>
+    </tr>`;
+  }).join("");
+
+  document.getElementById("postura-box").style.display = hayBronquitis ? "block" : "none";
+  document.getElementById("resultado").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+// ─── EXPORTAR PDF ──────────────────────────────────────────────────────────────
+function exportarPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+
+  const lote = document.getElementById("nombre_lote").value || "Lote";
+  const fechaStr = document.getElementById("fecha_inicio").value;
+  const conFecha = !!fechaStr;
+  const hoy = new Date().toLocaleDateString("es-CL", { day:"2-digit", month:"2-digit", year:"numeric" });
+
+  // Encabezado
+  doc.setFillColor(42, 84, 48);
+  doc.rect(0, 0, 297, 22, "F");
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(14);
+  doc.setTextColor(255, 255, 255);
+  doc.text("CALENDARIO DE VACUNACIÓN AVIAR", 14, 10);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(200, 230, 200);
+  doc.text(`Lote: ${lote}   |   Generado: ${hoy}${conFecha ? "   |   Inicio: " + new Date(fechaStr+"T12:00:00").toLocaleDateString("es-CL") : ""}`, 14, 17);
+
+  // AviVet logo texto
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
+  doc.setTextColor(92, 158, 97);
+  doc.text("AviVet", 260, 10);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.setTextColor(180, 210, 180);
+  doc.text("avivet.cl", 262, 16);
+
+  // Tabla
+  const cols = ["Día", "Sem.", ...(conFecha ? ["Fecha"] : []), "Vacuna", "Dosis", "Protege contra", "Vía", "Proveedor", "Notas"];
+  const rows = calendarioActual.map(r => [
+    r.dia, r.semana,
+    ...(conFecha ? [r.fecha] : []),
+    r.vacuna, r.dosis_label, r.protege, r.via, r.proveedor, r.notas
+  ]);
+
+  doc.autoTable({
+    head: [cols],
+    body: rows,
+    startY: 26,
+    styles: { fontSize: 8, cellPadding: 3, font: "helvetica" },
+    headStyles: { fillColor: [42, 84, 48], textColor: 255, fontStyle: "bold" },
+    alternateRowStyles: { fillColor: [240, 248, 241] },
+    columnStyles: {
+      0: { halign: "center", fontStyle: "bold", cellWidth: 12 },
+      1: { halign: "center", cellWidth: 12 }
+    },
+    margin: { left: 10, right: 10 }
+  });
+
+  // Nota al pie
+  const finalY = doc.lastAutoTable.finalY + 5;
+  doc.setFontSize(7);
+  doc.setTextColor(150);
+  doc.setFont("helvetica", "italic");
+  doc.text("* El programa puede variar según zona geográfica, historia sanitaria del plantel y disponibilidad de vacunas. | avivet.cl", 10, finalY);
+
+  doc.save(`calendario_vacunacion_${lote.replace(/\s+/g,"_")}.pdf`);
+}
+
+// ─── CATÁLOGO ─────────────────────────────────────────────────────────────────
+function renderCatalogo(sel) {
+  const panel = document.getElementById("catalogo-panel");
+  const grid = document.getElementById("catalogo-grid");
+
+  const enfsConVacunas = ENFERMEDADES.filter(e => sel.size === 0 || sel.has(e.id));
+  const vacunasMostradas = new Set();
+  let html = "";
+
+  enfsConVacunas.forEach(enf => {
+    const vacs = CATALOGO.filter(v => v.protege.includes(enf.id) && !vacunasMostradas.has(v.id));
+    if (!vacs.length) return;
+    vacs.forEach(v => vacunasMostradas.add(v.id));
+
+    html += `<div class="cat-group">
+      <div class="cat-group-title">${enf.nombre}</div>
+      <div class="cat-cards">`;
+
+    vacs.forEach(v => {
+      const tipoCss = v.tipo === "Viva" ? "tipo-viva" : "tipo-inactivada";
+      const posturaLabel = v.postura === true
+        ? '<span class="postura-ok">✓ Permitida</span>'
+        : v.postura === false
+          ? '<span class="postura-no">✗ No usar</span>'
+          : '<span style="color:var(--muted)">Consultar FT</span>';
+
+      html += `<div class="cat-card">
+        <div class="cat-card-header">
+          <div class="cat-nombre">${v.nombre}</div>
+          <span class="cat-tipo ${tipoCss}">${v.tipo}</span>
+        </div>
+        <div class="cat-row"><span class="cat-label">Cepa:</span> ${v.cepa}</div>
+        <div class="cat-row"><span class="cat-label">Vía:</span> ${v.via_label}</div>
+        <div class="cat-row"><span class="cat-label">Edad mín.:</span> ${v.edad_min}</div>
+        <div class="cat-row"><span class="cat-label">Programa:</span> ${v.programa}</div>
+        <div class="cat-row"><span class="cat-label">Resguardo:</span> ${v.resguardo}</div>
+        <div class="cat-row"><span class="cat-label">Postura:</span> ${posturaLabel}</div>
+        <div class="cat-row"><span class="cat-label">Proveedor:</span> ${v.proveedor}</div>
+        <div class="cat-reg">Reg. SAG: ${v.reg_sag} &nbsp;|&nbsp; ${v.almacenamiento}</div>
+        ${v.notas ? `<div class="cat-notas">${v.notas}</div>` : ""}
+      </div>`;
+    });
+
+    html += `</div></div>`;
+  });
+
+  grid.innerHTML = html || '<p style="color:var(--muted);text-align:center;padding:20px;">No hay vacunas en catálogo para las enfermedades seleccionadas.</p>';
+  panel.style.display = "block";
+}
+
+// ─── TABS ─────────────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  document.getElementById("tab-calendario").style.display = tab === "calendario" ? "block" : "none";
+  document.getElementById("tab-estado").style.display = tab === "estado" ? "block" : "none";
+  document.querySelectorAll(".tab-btn").forEach((btn, i) => {
+    btn.classList.toggle("active", (tab === "calendario" && i === 0) || (tab === "estado" && i === 1));
+  });
+  if (tab === "estado") renderEstado("todas");
+}
+
+// ─── ESTADO FT ────────────────────────────────────────────────────────────────
+
+// Vacunas conocidas pero SIN FT cargada aún (agregar aquí nuevas vacunas a medida que se identifiquen)
+const SIN_FT = [
+  { nombre: "Vectormune LT",       tipo: "Vectorizada", proveedor: "Nutringen / Ceva",      protege: ["marek","laringotraqueitis"], reg_sag: "" },
+  { nombre: "Vectormune ND",       tipo: "Vectorizada", proveedor: "Nutringen / Ceva",      protege: ["marek","newcastle"],         reg_sag: "" },
+  { nombre: "Novamune",            tipo: "Complejo inmune", proveedor: "Nutringen / Ceva",  protege: ["gumboro"],                   reg_sag: "" },
+  { nombre: "Vectormune FP LT AE", tipo: "Vectorizada", proveedor: "Nutringen / Ceva",      protege: ["viruela","laringotraqueitis","encefalomielitis"], reg_sag: "" },
+  { nombre: "Avipro Salmonella",   tipo: "Viva",        proveedor: "Encipharm",             protege: ["salmonella"],                reg_sag: "" },
+  { nombre: "Corymune 4",          tipo: "Inactivada",  proveedor: "Nutringen / Ceva",      protege: ["salmonella","coriza"],       reg_sag: "" },
+  { nombre: "Corymune 7",          tipo: "Inactivada",  proveedor: "Nutringen / Ceva",      protege: ["salmonella","coriza","newcastle","bronquitis","eds"], reg_sag: "" },
+];
+
+const ENF_NOMBRES = {
+  marek: "Marek", gumboro: "Gumboro", salmonella: "Salmonella",
+  bronquitis: "Bronquitis", newcastle: "Newcastle", laringotraqueitis: "Laringotraqueitis",
+  viruela: "Viruela", encefalomielitis: "Encefalomielitis", eds: "EDS", coriza: "Coriza"
+};
+
+let estadoFiltro = "todas";
+
+function filtrarEstado(filtro, btn) {
+  estadoFiltro = filtro;
+  document.querySelectorAll(".filtro-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  renderEstado(filtro);
+}
+
+function renderEstado(filtro) {
+  // Construir lista completa: con FT + sin FT
+  const conFT = CATALOGO.map(v => ({ ...v, ft: true }));
+  const sinFT = SIN_FT.map(v => ({ ...v, ft: false, cepa: "", reg_sag: v.reg_sag || "" }));
+  let todas = [...conFT, ...sinFT];
+
+  // Ordenar: primero con FT, luego sin FT, ambos grupos alfabéticos
+  todas.sort((a,b) => {
+    if (a.ft !== b.ft) return a.ft ? -1 : 1;
+    return a.nombre.localeCompare(b.nombre);
+  });
+
+  // Filtrar
+  if (filtro === "con_ft") todas = todas.filter(v => v.ft);
+  if (filtro === "sin_ft") todas = todas.filter(v => !v.ft);
+  if (filtro === "viva") todas = todas.filter(v => v.tipo.toLowerCase().includes("viva") || v.tipo.toLowerCase().includes("vector") || v.tipo.toLowerCase().includes("complejo"));
+  if (filtro === "inactivada") todas = todas.filter(v => v.tipo.toLowerCase().includes("inactiv"));
+
+  // Resumen
+  const total = [...conFT, ...sinFT].length;
+  const totalCon = conFT.length;
+  const totalSin = sinFT.length;
+  document.getElementById("resumen-chips").innerHTML = `
+    <div class="resumen-chip chip-total">📋 Total: ${total}</div>
+    <div class="resumen-chip chip-con">✓ Con FT: ${totalCon}</div>
+    <div class="resumen-chip chip-sin">✗ Sin FT: ${totalSin}</div>
+  `;
+
+  // Tabla
+  const tbody = document.getElementById("estado-tbody");
+  if (!todas.length) { tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px;">Sin resultados</td></tr>`; return; }
+
+  tbody.innerHTML = todas.map(v => {
+    const tipoCss = v.tipo.toLowerCase().includes("inactiv") ? "tipo-inact" : "tipo-viva2";
+    const enfs = (v.protege || []).map(e => {
+      const lbl = ENF_NOMBRES[e] || e;
+      return `<span class="enf-tag tag-${e}">${lbl}</span>`;
+    }).join("");
+    const ftCell = v.ft
+      ? `<span class="ft-si" title="Ficha técnica cargada">✓</span>`
+      : `<span class="ft-no" title="Sin ficha técnica">✗</span>`;
+    const regCell = v.reg_sag && v.reg_sag !== "—"
+      ? `<span class="reg-cell">${v.reg_sag}</span>`
+      : `<span class="sin-reg">Sin registro</span>`;
+
+    return `<tr>
+      <td><strong>${v.nombre}</strong></td>
+      <td><span class="tipo-badge ${tipoCss}">${v.tipo}</span></td>
+      <td style="font-size:12px;">${v.proveedor}</td>
+      <td>${enfs}</td>
+      <td>${regCell}</td>
+      <td style="text-align:center;">${ftCell}</td>
+    </tr>`;
+  }).join("");
+}
+
+// ─── UTILS ────────────────────────────────────────────────────────────────────
+function capitalizar(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
 </script>
 </body>
 </html>
