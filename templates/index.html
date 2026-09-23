@@ -370,6 +370,10 @@ tbody tr:hover td { background: var(--green-light); }
 .dosis-nota { font-size:11px; color:var(--muted); font-style:italic; width:100%; }
 .warn-box { background:#fff8e1; border:1px solid #ffe082; border-radius:8px; padding:10px 14px; font-size:12px; color:#8c6400; margin-top:8px; }
 .warn-box::before { content:"⚠ "; font-weight:700; }
+.info-box { background:#e8f4fd; border:1px solid #90caf9; border-radius:8px; padding:10px 14px; font-size:12px; color:#0d47a1; margin-top:8px; }
+.info-box::before { content:"ℹ "; font-weight:700; }
+.enf-guia { font-size:11px; color:var(--green-accent); text-decoration:none; font-weight:600; }
+.enf-guia:hover { text-decoration:underline; }
 .cubre-tambien { font-size:11px; background:#e8f5e9; color:#2e7d32; border-radius:6px; padding:4px 10px; margin-top:6px; display:inline-block; font-weight:600; }
 .enf-cubierta-label { font-size:12px; color:var(--muted); font-style:italic; padding:8px 0; }
 </style>
@@ -410,7 +414,10 @@ tbody tr:hover td { background: var(--green-light); }
     <div class="panel-title">Enfermedades a Cubrir</div>
     <div class="selec-row">
       <small>Selecciona las enfermedades que deseas incluir en el programa</small>
-      <button class="btn-text" onclick="seleccionarTodas()">Seleccionar todas</button>
+      <span>
+        <button class="btn-text" onclick="cargarProgramaSugerido()">Usar programa sugerido (Nutringen)</button>
+        <button class="btn-text" onclick="seleccionarTodas()">Seleccionar todas</button>
+      </span>
     </div>
     <div class="enf-grid" id="enf-grid"></div>
   </div>
@@ -501,8 +508,8 @@ const ENFERMEDADES = [
   { id: "marek",             nombre: "Enfermedad de Marek",             desc: "Herpesvirus. Tumores, parálisis y muerte. Vacunación en incubación." },
   { id: "gumboro",           nombre: "Gumboro (Bursitis Infecciosa)",   desc: "Birnavirus inmunosupresor. Afecta Bolsa de Fabricio en pollitos." },
   { id: "salmonella",        nombre: "Salmonella",                      desc: "Salmonella Enteritidis / typhimurium. Zoonosis — inocuidad alimentaria." },
-  { id: "bronquitis",        nombre: "Bronquitis Infecciosa (BI)",      desc: "Coronavirus aviar. Afecta vías respiratorias y producción. Múltiples cepas." },
-  { id: "newcastle",         nombre: "Enfermedad de Newcastle",         desc: "Paramixovirus. Alta mortalidad. Declaración obligatoria." },
+  { id: "bronquitis",        nombre: "Bronquitis Infecciosa (BI)",      desc: "Gammacoronavirus (IBV). Serotipos Massachusetts, variante 793B/4-91 y QX no se protegen entre sí — también afecta oviducto y riñón según genotipo.", guia: "https://avivet.cl/avivet/Recursos/Enfermedades-respiratorias.html" },
+  { id: "newcastle",         nombre: "Enfermedad de Newcastle",         desc: "Paramixovirus (APMV-1). Declaración obligatoria SAG. Cepas vacunales lentogénicas (La Sota, B1/Hitchner, Clone 30, C2) difieren en reactividad e inmunogenicidad.", guia: "https://avivet.cl/avivet/Recursos/Enfermedades-respiratorias.html" },
   { id: "laringotraqueitis", nombre: "Laringotraqueitis Infecciosa",    desc: "Herpesvirus. Alta morbilidad en vías respiratorias superiores." },
   { id: "viruela",           nombre: "Viruela / Difteroviruela",        desc: "Poxvirus. Lesiones en piel y mucosas. Vacunación por punción alar." },
   { id: "encefalomielitis",  nombre: "Encefalomielitis Aviar (AE)",     desc: "Picornavirus. Sistema nervioso en pollitos. Vacunación en reproductoras." },
@@ -544,36 +551,72 @@ const CATALOGO = [
   { id:"vectormune_fp_lt",     nombre:"Vectormune FP-LT",           tipo:"Vectorizada", protege:["viruela","laringotraqueitis"],  cepa:"Viruela aviar Cepa Cutter recombinante rFP/LT ≥10²·⁷ TCID50", via_label:"Punción alar (0.01 mL)",         edad_min:"4 semanas",     programa:"Dosis única por punción alar.",                                     resguardo:"21 días",                                 almacenamiento:"2-8°C. Usar en 2 h de reconstituido.",    proveedor:"Ceva Salud Animal Chile",  reg_sag:"2727-B",  postura:null,   notas:"Vectorizada Fowlpox-LT. Verificar costra 7-10 días. Aprobado 14-11-2025." },
   { id:"vectormune_fp_lt_ae",  nombre:"Vectormune FP-LT+AE",        tipo:"Vectorizada", protege:["viruela","laringotraqueitis","encefalomielitis"], cepa:"Viruela Cepa Cutter rFP/LT + Encefalomielitis Cepa Calnek", via_label:"Punción alar (0.01 mL)", edad_min:"4 semanas",     programa:"Dosis única. ≥4 sem antes de postura.",                             resguardo:"21 días",                                 almacenamiento:"2-8°C. Usar en 1 h de reconstituido.",    proveedor:"Ceva Salud Animal Chile",  reg_sag:"2733-B",  postura:null,   notas:"Triple: Viruela + Laringotraqueitis + Encefalomielitis. Broilers y pollas reemplazo. Aprobado 18-12-2025." },
   { id:"cevac_bi_l",           nombre:"CEVAC BI L",                 tipo:"Viva",        protege:["bronquitis","newcastle"],       cepa:"BI Cepa Mass B48 + Newcastle Hitchner B1",  via_label:"Ocular / Spray / Agua de bebida",       edad_min:"Día 1",         programa:"Desde el primer día de vida.",                                      resguardo:"Cero días",                               almacenamiento:"2-8°C. Protegido de la luz.",             proveedor:"Ceva Salud Animal Chile",  reg_sag:"0405-B",  postura:null,   notas:"Combinada BI Mass B48 + Newcastle Hitchner B1. Aprobado 29-05-2024." },
-  { id:"univax_bd",            nombre:"Univax BD",                  tipo:"Viva",        protege:["gumboro"],                     cepa:"ST-12 ≥10²·⁵ TCID50",                      via_label:"Agua de bebida / In ovo",               edad_min:"Día 1 / In ovo", programa:"Según recomendación veterinaria.",                                   resguardo:"21 días",                                 almacenamiento:"2-8°C. No congelar.",                     proveedor:"MSD / Intervet Chile",     reg_sag:"664-B",   postura:null,   notas:"Para pollos y huevos embrionados. Resguardo 21 días. Aprobado 09-07-2022." }
+  { id:"univax_bd",            nombre:"Univax BD",                  tipo:"Viva",        protege:["gumboro"],                     cepa:"ST-12 ≥10²·⁵ TCID50",                      via_label:"Agua de bebida / In ovo",               edad_min:"Día 1 / In ovo", programa:"Según recomendación veterinaria.",                                   resguardo:"21 días",                                 almacenamiento:"2-8°C. No congelar.",                     proveedor:"MSD / Intervet Chile",     reg_sag:"664-B",   postura:null,   notas:"Para pollos y huevos embrionados. Resguardo 21 días. Aprobado 09-07-2022." },
+  { id:"avipro_salmonella_vac_e", nombre:"Avipro Salmonella Vac E", tipo:"Viva",        protege:["salmonella"],                  cepa:"S. Enteritidis Sm24/Rif12/Ssq",            via_label:"Spray (día 1) / Agua de bebida (revacunación)", edad_min:"Día 1", programa:"Spray al día 1 en incubadora. Revacunación por agua de bebida desde sem. 6.", resguardo:"Cero días",                    almacenamiento:"2-8°C. No congelar. Proteger de la luz.", proveedor:"Elanco / Encipharm",       reg_sag:"—",       postura:null,   notas:"Reduce la excreción de cepas de campo de S. Enteritidis. Registro SAG Chile sin confirmar." }
 ];
 
-const VACUNAS = {
-  vectormune_lt:      { nombre: "Vectormune LT",      protege: ["marek","laringotraqueitis"], via: "subcutanea",  lugar: "Planta incubación",  proveedor: "Nutringen" },
-  novamune:           { nombre: "Novamune",            protege: ["gumboro"],                  via: "subcutanea",  lugar: "Planta incubación",  proveedor: "Nutringen", notas: "Cepa SYZA 26" },
-  avipro_salmonella:  { nombre: "Avipro Salmonella",  protege: ["salmonella"],               via: "spray",       lugar: "Planta incubación",  proveedor: "Encipharm" },
-  mass_l:             { nombre: "Mass L",              protege: ["bronquitis"],               via: "spray_agua",  lugar: "Incubación o campo", proveedor: "Nutringen", notas: "Cepa Massachusetts" },
-  ibird:              { nombre: "Ibrd",                protege: ["bronquitis"],               via: "spray_agua",  lugar: "Campo",              proveedor: "Nutringen", notas: "Cepa Variante 1/96" },
-  bi_l_49:            { nombre: "Bi L",                protege: ["bronquitis","newcastle"],   via: "spray_agua",  lugar: "Campo",              proveedor: "Nutringen", notas: "Mass + Newcastle B1" },
-  bi_l_77:            { nombre: "Bi L",                protege: ["bronquitis","newcastle"],   via: "spray_agua",  lugar: "Campo",              proveedor: "Nutringen", notas: "Mass + Newcastle B1" },
-  vectormune_fp:      { nombre: "Vectormune FP LT AE",protege: ["laringotraqueitis"],        via: "puncion_alar",lugar: "Campo",              proveedor: "Nutringen", notas: "Difteroviruela + LT + Encefalomielitis" },
-  ibird_98:           { nombre: "Ibrd",                protege: ["bronquitis"],               via: "spray_agua",  lugar: "Campo",              proveedor: "Nutringen", notas: "Cepa Variante 1/96" },
-  corymune_7:         { nombre: "Corymune 7",          protege: ["salmonella","newcastle","bronquitis"], via: "intramuscular", lugar: "Campo", proveedor: "Nutringen", notas: "Pechuga. Salmonella + Coriza + NC + BI + EDS" },
-  avipro_42:          { nombre: "Avipro Salmonella",  protege: ["salmonella"],               via: "agua_bebida", lugar: "Campo",              proveedor: "Encipharm" }
-};
-
-const PROGRAMA = [
-  { dia:1,  sem:1,  id:"vectormune_lt"     },
-  { dia:1,  sem:1,  id:"novamune"          },
-  { dia:1,  sem:1,  id:"avipro_salmonella" },
-  { dia:1,  sem:1,  id:"mass_l"            },
-  { dia:21, sem:3,  id:"ibird"             },
-  { dia:42, sem:6,  id:"avipro_42"         },
-  { dia:49, sem:7,  id:"bi_l_49"           },
-  { dia:70, sem:10, id:"vectormune_fp"     },
-  { dia:77, sem:11, id:"bi_l_77"           },
-  { dia:98, sem:14, id:"ibird_98"          },
-  { dia:105,sem:15, id:"corymune_7"        }
+// Programa de referencia (base Nutringen/AGRICOVIAL para pollas de reemplazo, postura).
+// Los ids apuntan a fichas reales del CATALOGO — antes apuntaban a ids que nunca existieron ahí.
+const PROGRAMA_SUGERIDO = [
+  { dia:1,   id:"vectormune_hvt_lt",       via:"subcutanea",    lugar:"Planta incubación" },
+  { dia:1,   id:"novamune",                via:"subcutanea",    lugar:"Planta incubación" },
+  { dia:1,   id:"avipro_salmonella_vac_e", via:"spray",         lugar:"Planta incubación" },
+  { dia:1,   id:"cevac_mass_l",            via:"spray_agua",    lugar:"Incubación o campo" },
+  { dia:21,  id:"cevac_ibird",             via:"spray_agua",    lugar:"Campo" },
+  { dia:42,  id:"avipro_salmonella_vac_e", via:"agua_bebida",   lugar:"Campo" },
+  { dia:49,  id:"cevac_bi_l",              via:"spray_agua",    lugar:"Campo" },
+  { dia:70,  id:"vectormune_fp_lt_ae",     via:"puncion_alar",  lugar:"Campo" },
+  { dia:77,  id:"cevac_bi_l",              via:"spray_agua",    lugar:"Campo" },
+  { dia:98,  id:"cevac_ibird",             via:"spray_agua",    lugar:"Campo" },
+  { dia:105, id:"cevac_corymune_7k",       via:"intramuscular", lugar:"Campo", nota:"Pechuga" }
 ];
+
+function cargarProgramaSugerido() {
+  const enfsCubiertas = new Set();
+  PROGRAMA_SUGERIDO.forEach(p => {
+    const vac = CATALOGO.find(v => v.id === p.id);
+    if (vac) vac.protege.forEach(e => enfsCubiertas.add(e));
+  });
+
+  document.querySelectorAll(".enf-card").forEach(card => {
+    const cb = card.querySelector("input");
+    const on = enfsCubiertas.has(cb.value);
+    cb.checked = on;
+    card.classList.toggle("on", on);
+  });
+  actualizarSelectores();
+
+  const loteInput = document.getElementById("nombre_lote");
+  if (!loteInput.value) loteInput.value = "Lote Nutringen";
+  const fechaStr = document.getElementById("fecha_inicio").value;
+  const fechaInicio = fechaStr ? new Date(fechaStr + "T12:00:00") : null;
+
+  calendarioActual = PROGRAMA_SUGERIDO.map(p => {
+    const vac = CATALOGO.find(v => v.id === p.id) || {};
+    let fecha = "";
+    if (fechaInicio) {
+      const d = new Date(fechaInicio);
+      d.setDate(d.getDate() + p.dia - 1);
+      fecha = d.toLocaleDateString("es-CL", { day:"2-digit", month:"2-digit", year:"numeric" });
+    }
+    return {
+      dia: p.dia,
+      semana: Math.ceil(p.dia / 7),
+      fecha,
+      vacuna: vac.nombre || p.id,
+      vacuna_id: p.id,
+      dosis_label: "Programa sugerido",
+      protege: (vac.protege || []).map(e => ENF_NOMBRES[e] || e).join(", "),
+      via: (VIA_LABELS[p.via] || {}).label || p.via,
+      proveedor: vac.proveedor || "",
+      reg_sag: vac.reg_sag || "",
+      notas: [p.nota, vac.notas].filter(Boolean).join(". ")
+    };
+  }).sort((a, b) => a.dia - b.dia);
+
+  renderTabla(calendarioActual, !!fechaStr, loteInput.value, fechaStr, enfsCubiertas.has("bronquitis"));
+  renderCatalogo(enfsCubiertas);
+}
 
 const VIA_LABELS = {
   subcutanea:   { label: "Subcutánea",    css: "badge-sc"    },
@@ -697,6 +740,10 @@ const RANGOS = {
   ],
   univax_bd: [
     { label:"1ª dosis",           min:1,   max:28,  default:14,  nota:"Cepa ST-12. Resguardo 21 días." }
+  ],
+  avipro_salmonella_vac_e: [
+    { label:"1ª dosis (spray)",     min:1,   max:7,   default:1,   nota:"Planta de incubación o campo." },
+    { label:"Revacunación (agua)",  min:28,  max:56,  default:42,  nota:"Desde la semana 6." }
   ]
 };
 
@@ -705,11 +752,15 @@ const grid = document.getElementById("enf-grid");
 ENFERMEDADES.forEach(e => {
   const card = document.createElement("div");
   card.className = "enf-card";
+  const guiaHtml = e.guia
+    ? `<a class="enf-guia" href="${e.guia}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Guía técnica →</a>`
+    : "";
   card.innerHTML = `
     <input type="checkbox" value="${e.id}" style="display:none;">
     <div class="enf-check">✓</div>
     <div class="enf-nombre">${e.nombre}</div>
-    <div class="enf-desc">${e.desc}</div>`;
+    <div class="enf-desc">${e.desc}</div>
+    ${guiaHtml ? `<div style="margin-top:6px;">${guiaHtml}</div>` : ""}`;
   card.addEventListener("click", () => {
     const cb = card.querySelector("input");
     cb.checked = !cb.checked;
@@ -801,6 +852,24 @@ function actualizarSelectores() {
   actualizarBotonGenerar();
 }
 
+// Notas de protección cruzada / reactividad entre cepas de bronquitis y Newcastle.
+// La protección vacunal es de serotipo: una vacuna Massachusetts no cubre bien una variante de campo (QX, 793B/4-91) y viceversa.
+const NOTA_CEPA = {
+  bronipra_1:          "Cepa Massachusetts (H120): protege bien frente al serotipo Mass, pero da protección cruzada limitada frente a variantes de campo (QX, 793B/4-91). Si hay presión de esas cepas en la zona, complementar con una vacuna variante (ej. Cevac Ibird).",
+  nobilis_ib_ma5:      "Cepa Massachusetts (Ma5): protección de serotipo. Verifique qué variantes circulan en la zona — puede requerir complemento con una vacuna variante (protectotipo 793B/4-91 o QX).",
+  cevac_mass_l:        "Cepa Massachusetts (B48): protección de serotipo. En el sur de Chile se recomienda complementar con una vacuna variante (ej. Cevac Ibird) para ampliar la cobertura frente a los genotipos circulantes en campo.",
+  cevac_ibird:         "Cepa variante 1/96 (grupo 793B): da protección cruzada frente a QX y Q1. Se usa como complemento de la primovacunación con cepa Massachusetts, no como única vacuna de bronquitis.",
+  nobilis_ma5_clone30: "Combina Bronquitis Massachusetts + Newcastle Clone 30 en una sola aplicación. Como toda vacuna Mass, su protección de bronquitis es de serotipo — no cubre bien variantes de campo.",
+  cevac_bi_l:          "Combina Bronquitis Massachusetts B48 + Newcastle Hitchner B1 (cepa suave, poco reactiva). La protección de bronquitis queda limitada al serotipo Mass; considere alternar con una vacuna variante si hay desafío de campo.",
+  hipraviar_s:         "Cepa La Sota: buena inmunogenicidad pero más reactiva a nivel respiratorio. Evite coincidir el mismo día con otra vacuna viva respiratoria (bronquitis); espacie según indicación del médico veterinario.",
+  nobilis_nd_c2:       "Cepa C2: reacción post-vacunal más suave que La Sota. Apta para primovacunación en pollitos.",
+  nobilis_nd_clone30:  "Cepa Clone 30 (lentogénica suave): baja reactividad respiratoria, apta para aves jóvenes o con desafío respiratorio concurrente.",
+  newcastle_zoetis:    "Cepa La Sota/B1: revise el historial de vacunas respiratorias recientes antes de aplicar; evite coincidir con otra viva de bronquitis el mismo día.",
+  cevac_broiler_nd_k:  "Inactivada cepa La Sota: requiere primovacunación previa con vacuna viva de Newcastle para asegurar respuesta inmune adecuada.",
+  cevac_nd_ib_eds_k:   "Combina Newcastle La Sota + Bronquitis Massachusetts (M-41) + EDS. Requiere primovacunación previa con vivas de ambos serotipos (Mass en el caso de bronquitis).",
+  cevac_corymune_7k:   "Incluye Newcastle La Sota + Bronquitis Massachusetts. Igual que las demás inactivadas combinadas, requiere primovacunación previa con vacunas vivas del serotipo correspondiente."
+};
+
 function selectVacuna(enfId, vacId, todosProtege) {
   // Marcar card seleccionada
   document.querySelectorAll(`[id^="card-${enfId}-"]`).forEach(c => c.classList.remove("selected"));
@@ -839,6 +908,11 @@ function selectVacuna(enfId, vacId, todosProtege) {
     </div>`;
     if (r.nota) html += `<div class="dosis-nota">${r.nota}</div>`;
   });
+
+  // Nota de cepa / protección cruzada (bronquitis y Newcastle)
+  if (NOTA_CEPA[vacId]) {
+    html += `<div class="info-box">${NOTA_CEPA[vacId]}</div>`;
+  }
 
   // Advertencias específicas
   if (vacId === "nobilis_ib_nd_eds" || vacId === "cevac_nd_ib_eds_k") {
@@ -1098,7 +1172,6 @@ function switchTab(tab) {
 // Vacunas conocidas pero SIN FT cargada aún (agregar aquí nuevas vacunas a medida que se identifiquen)
 const SIN_FT = [
   { nombre: "CEVAC MD HVT",     tipo: "Vectorizada",    proveedor: "Ceva Salud Animal Chile",  protege: ["marek"],       reg_sag: "" },
-  { nombre: "Avipro Salmonella",tipo: "Viva",           proveedor: "Encipharm",                protege: ["salmonella"],  reg_sag: "" },
 ];
 
 const ENF_NOMBRES = {
