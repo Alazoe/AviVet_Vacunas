@@ -249,6 +249,37 @@ tbody tr:hover td { background: var(--green-light); }
 #tab-calendario { display: block; }
 #tab-estado { display: none; }
 
+
+/* RESUMEN DE FICHAS */
+#tab-resumen { display: none; }
+.res-barra { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:14px; }
+.res-barra input[type=search] { flex:1; min-width:200px; padding:9px 14px; border:1.5px solid var(--border); border-radius:8px; font-family:'DM Sans',sans-serif; font-size:13px; background:var(--bg); }
+.res-barra input[type=search]:focus { outline:none; border-color:var(--green-accent); }
+.res-chips { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px; }
+.res-prog { font-size:12px; color:var(--muted); margin-bottom:16px; }
+.res-prog b { color:var(--green); }
+.res-enf { margin-bottom:22px; }
+.res-enf-title { font-family:'Fraunces',serif; font-size:15px; font-weight:700; color:var(--green); padding-bottom:6px; border-bottom:2px solid var(--green-light); margin-bottom:10px; display:flex; justify-content:space-between; align-items:baseline; gap:8px; flex-wrap:wrap; }
+.res-enf-title small { font-family:'DM Sans',sans-serif; font-size:11px; font-weight:500; color:var(--muted); }
+.res-item { border:1px solid var(--border); border-radius:10px; margin-bottom:8px; background:var(--white); }
+.res-item.revisada { background:#f4faf4; border-color:#b7d9ba; }
+.res-item summary { list-style:none; cursor:pointer; padding:11px 14px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+.res-item summary::-webkit-details-marker { display:none; }
+.res-item summary::before { content:"▸"; color:var(--green-accent); font-size:12px; transition:transform .15s; }
+.res-item[open] summary::before { transform:rotate(90deg); }
+.res-nombre { font-weight:700; font-size:14px; color:var(--dark); }
+.res-cepa { font-size:12px; color:var(--muted); flex:1; min-width:140px; }
+.res-badge { font-size:10px; font-weight:700; padding:2px 8px; border-radius:100px; white-space:nowrap; }
+.rb-pend { background:#fce8e8; color:#c62828; }
+.rb-ok { background:#e8f5e9; color:#2e7d32; }
+.res-cuerpo { padding:4px 14px 14px; border-top:1px solid #f0ede8; }
+.res-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:4px 22px; margin-top:10px; }
+.res-fila { font-size:12px; color:var(--muted); display:flex; gap:6px; }
+.res-fila b { color:var(--text); min-width:92px; flex-shrink:0; }
+.res-aviso { margin-top:10px; }
+.res-rev { margin-top:12px; font-size:12px; font-weight:600; color:var(--green); display:flex; gap:6px; align-items:center; cursor:pointer; }
+.res-rev input { accent-color:var(--green); }
+
 /* ESTADO FT */
 .estado-filtros { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; align-items: center; }
 .filtro-btn {
@@ -426,6 +457,7 @@ tbody tr:hover td { background: var(--green-light); }
 <div class="tabs-bar">
   <button class="tab-btn active" onclick="switchTab('calendario')">Generar Calendario</button>
   <button class="tab-btn" onclick="switchTab('estado')">Estado de Fichas Técnicas</button>
+  <button class="tab-btn" onclick="switchTab('resumen')">Resumen de Fichas</button>
 </div>
 
 <div class="contenedor">
@@ -550,6 +582,24 @@ tbody tr:hover td { background: var(--green-light); }
     </p>
   </div>
 </div><!-- /tab-estado -->
+
+<!-- ── TAB RESUMEN DE FICHAS ─────────────────────────────────── -->
+<div id="tab-resumen">
+  <div class="panel">
+    <div class="panel-title">Resumen de Fichas Técnicas por Enfermedad</div>
+    <div class="res-barra">
+      <input type="search" id="res-buscar" placeholder="Buscar vacuna, cepa, laboratorio o N° de registro…" oninput="renderResumen()">
+      <button class="btn-pdf" style="display:inline-block;" onclick="exportarResumenPDF()">⬇ Exportar PDF</button>
+      <button class="btn-text" onclick="toggleTodasFichas()">Abrir / cerrar todas</button>
+    </div>
+    <div class="res-chips" id="res-chips"></div>
+    <div class="res-prog" id="res-prog"></div>
+    <div id="res-lista"></div>
+    <p class="nota-final">* Marca cada ficha como revisada para llevar el control (se guarda en este navegador). Una vacuna que cubre varias enfermedades aparece en cada una.</p>
+  </div>
+</div><!-- /tab-resumen -->
+
+
 
 </div><!-- /contenedor -->
 
@@ -1440,14 +1490,146 @@ function renderCatalogo(sel) {
   panel.style.display = "block";
 }
 
+
+// ─── RESUMEN DE FICHAS TÉCNICAS ───────────────────────────────────────────────
+let resEnf = "todas";
+let resAbiertas = false;
+
+function resRevisadas() {
+  try { return new Set(JSON.parse(localStorage.getItem("avivet_fichas_revisadas") || "[]")); }
+  catch (e) { return new Set(); }
+}
+function resGuardar(set) {
+  try { localStorage.setItem("avivet_fichas_revisadas", JSON.stringify([...set])); } catch (e) {}
+}
+function marcarRevisada(id, on) {
+  const set = resRevisadas();
+  on ? set.add(id) : set.delete(id);
+  resGuardar(set);
+  renderResumen(true);
+}
+function filtrarResEnf(id) { resEnf = id; renderResumen(); }
+function toggleTodasFichas() {
+  resAbiertas = !resAbiertas;
+  document.querySelectorAll("#res-lista details").forEach(d => d.open = resAbiertas);
+}
+
+function resEsc(t) { return String(t == null ? "" : t).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+function resPostura(v) {
+  return v.postura === true ? "Permitida" : v.postura === false ? "No usar durante postura" : "Consultar FT";
+}
+
+function resFicha(v, revisadas, abierta) {
+  const rev = revisadas.has(v.id);
+  const rangos = (RANGOS[v.id] || []).map(r => `${r.label}: día ${r.min}${r.max !== r.min ? "–" + r.max : ""} (sugerido ${r.default})`).join(" · ");
+  const aviso = [WARNS_VAC[v.id] && "⚠ " + WARNS_VAC[v.id], NOTA_CEPA[v.id] && "ℹ " + NOTA_CEPA[v.id]].filter(Boolean);
+  const otras = v.protege.map(e => ENF_NOMBRES[e] || e).join(", ");
+  const fila = (k, val) => val ? `<div class="res-fila"><b>${k}</b><span>${resEsc(val)}</span></div>` : "";
+  return `<details class="res-item ${rev ? "revisada" : ""}" ${abierta ? "open" : ""}>
+    <summary>
+      <span class="res-nombre">${resEsc(v.nombre)}</span>
+      <span class="res-cepa">${resEsc(v.cepa || "")}</span>
+      <span class="cat-tipo ${v.tipo.toLowerCase().includes("inactiv") ? "tipo-inactivada" : "tipo-viva"}">${resEsc(v.tipo)}</span>
+      ${v.ft_pendiente ? '<span class="res-badge rb-pend">Sin ficha SAG</span>' : ""}
+      ${rev ? '<span class="res-badge rb-ok">✓ Revisada</span>' : ""}
+    </summary>
+    <div class="res-cuerpo">
+      <div class="res-grid">
+        ${fila("Protege contra", otras)}
+        ${fila("Cepa", v.cepa)}
+        ${fila("Vía", v.via_label)}
+        ${fila("Edad mínima", v.edad_min)}
+        ${fila("Esquema", v.programa)}
+        ${rangos ? fila("Días en app", rangos) : ""}
+        ${fila("Resguardo", v.resguardo)}
+        ${fila("Postura", resPostura(v))}
+        ${fila("Almacenamiento", v.almacenamiento)}
+        ${fila("Proveedor", v.proveedor)}
+        ${fila("Reg. SAG", v.reg_sag && v.reg_sag !== "—" ? v.reg_sag : "Sin registro confirmado")}
+        ${fila("Notas", v.notas)}
+      </div>
+      ${aviso.map(a => `<div class="${a.startsWith("⚠") ? "warn-box" : "info-box"} res-aviso">${resEsc(a.slice(2))}</div>`).join("")}
+      <label class="res-rev"><input type="checkbox" ${rev ? "checked" : ""} onchange="marcarRevisada('${v.id}', this.checked)"> Marcar ficha como revisada</label>
+    </div>
+  </details>`;
+}
+
+function resDatos() {
+  const q = (document.getElementById("res-buscar")?.value || "").trim().toLowerCase();
+  const coincide = v => !q || [v.nombre, v.cepa, v.proveedor, v.reg_sag, v.tipo, v.notas].join(" ").toLowerCase().includes(q);
+  return ENFERMEDADES.map(e => ({ enf: e, vacs: CATALOGO.filter(v => v.protege.includes(e.id) && coincide(v)) }))
+    .filter(g => g.vacs.length && (resEnf === "todas" || g.enf.id === resEnf));
+}
+
+function renderResumen(mantener) {
+  const revisadas = resRevisadas();
+  const abiertasPrevias = mantener ? new Set([...document.querySelectorAll("#res-lista details[open] .res-nombre")].map(n => n.textContent)) : null;
+  const grupos = resDatos();
+
+  document.getElementById("res-chips").innerHTML =
+    `<button class="filtro-btn ${resEnf === "todas" ? "active" : ""}" onclick="filtrarResEnf('todas')">Todas</button>` +
+    ENFERMEDADES.filter(e => CATALOGO.some(v => v.protege.includes(e.id)))
+      .map(e => `<button class="filtro-btn ${resEnf === e.id ? "active" : ""}" onclick="filtrarResEnf('${e.id}')">${resEsc(ENF_NOMBRES[e.id] || e.nombre)}</button>`).join("");
+
+  const total = CATALOGO.length;
+  const hechas = CATALOGO.filter(v => revisadas.has(v.id)).length;
+  const pend = CATALOGO.filter(v => v.ft_pendiente).length;
+  document.getElementById("res-prog").innerHTML =
+    `Fichas revisadas: <b>${hechas} de ${total}</b>` + (pend ? ` · Sin ficha SAG cargada: <b>${pend}</b>` : "") + ` · Sin ficha en el catálogo: <b>${SIN_FT.length}</b>`;
+
+  let html = grupos.map(g => `<div class="res-enf">
+      <div class="res-enf-title"><span>${resEsc(g.enf.nombre)}</span><small>${g.vacs.length} vacuna${g.vacs.length > 1 ? "s" : ""} · ${g.vacs.filter(v => revisadas.has(v.id)).length} revisada${g.vacs.filter(v => revisadas.has(v.id)).length === 1 ? "" : "s"}</small></div>
+      ${g.vacs.map(v => resFicha(v, revisadas, resAbiertas || (abiertasPrevias && abiertasPrevias.has(v.nombre)))).join("")}
+    </div>`).join("");
+
+  const sin = SIN_FT.filter(v => resEnf === "todas" || v.protege.includes(resEnf));
+  if (sin.length && !document.getElementById("res-buscar").value) {
+    html += `<div class="res-enf"><div class="res-enf-title"><span>Conocidas, sin ficha técnica cargada</span><small>${sin.length}</small></div>` +
+      sin.map(v => `<div class="res-item"><div style="display:flex;gap:10px;padding:11px 14px;flex-wrap:wrap;align-items:center;"><span class="res-nombre">${resEsc(v.nombre)}</span><span class="res-cepa">${resEsc(v.proveedor)} · ${v.protege.map(e => ENF_NOMBRES[e] || e).join(", ")}</span><span class="cat-tipo tipo-viva">${resEsc(v.tipo)}</span><span class="res-badge rb-pend">Sin ficha</span></div></div>`).join("") + `</div>`;
+  }
+  document.getElementById("res-lista").innerHTML = html || '<p class="empty">Sin resultados para la búsqueda.</p>';
+}
+
+function exportarResumenPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+  const hoy = new Date().toLocaleDateString("es-CL");
+  doc.setFillColor(42, 84, 48); doc.rect(0, 0, 297, 20, "F");
+  doc.setFont("helvetica", "bold"); doc.setFontSize(14); doc.setTextColor(255);
+  doc.text("RESUMEN DE FICHAS TÉCNICAS POR ENFERMEDAD", 14, 10);
+  doc.setFont("helvetica", "normal"); doc.setFontSize(9); doc.setTextColor(200, 230, 200);
+  doc.text(`AviVet · avivet.cl/vacunas · Generado: ${hoy}`, 14, 16);
+  const revisadas = resRevisadas();
+  let y = 26;
+  resDatos().forEach(g => {
+    doc.autoTable({
+      startY: y,
+      head: [[{ content: g.enf.nombre, colSpan: 8, styles: { fillColor: [42, 84, 48], halign: "left" } }],
+             ["Vacuna", "Tipo", "Cepa", "Vía", "Esquema", "Resguardo / Postura", "Reg. SAG", "Rev."]],
+      body: g.vacs.map(v => [v.nombre + "\n" + v.proveedor, v.tipo, v.cepa, v.via_label, v.programa,
+        v.resguardo + "\nPostura: " + resPostura(v), v.reg_sag && v.reg_sag !== "—" ? v.reg_sag : "—", revisadas.has(v.id) ? "✓" : ""]),
+      styles: { fontSize: 7, cellPadding: 2, font: "helvetica", valign: "top" },
+      headStyles: { fillColor: [92, 158, 97], textColor: 255 },
+      alternateRowStyles: { fillColor: [240, 248, 241] },
+      columnStyles: { 0: { fontStyle: "bold", cellWidth: 38 }, 1: { cellWidth: 20 }, 2: { cellWidth: 40 }, 3: { cellWidth: 36 }, 7: { cellWidth: 10, halign: "center" } },
+      margin: { left: 10, right: 10 }
+    });
+    y = doc.lastAutoTable.finalY + 6;
+    if (y > 185) { doc.addPage(); y = 14; }
+  });
+  doc.setFontSize(7); doc.setTextColor(150);
+  doc.text("* Resumen elaborado a partir de las fichas técnicas SAG cargadas en el catálogo. Verificar siempre la ficha vigente antes de indicar.", 10, 205);
+  doc.save("resumen_fichas_tecnicas_avivet.pdf");
+}
+
 // ─── TABS ─────────────────────────────────────────────────────────────────────
 function switchTab(tab) {
-  document.getElementById("tab-calendario").style.display = tab === "calendario" ? "block" : "none";
-  document.getElementById("tab-estado").style.display = tab === "estado" ? "block" : "none";
-  document.querySelectorAll(".tab-btn").forEach((btn, i) => {
-    btn.classList.toggle("active", (tab === "calendario" && i === 0) || (tab === "estado" && i === 1));
-  });
+  const tabs = ["calendario", "estado", "resumen"];
+  tabs.forEach(t => { document.getElementById("tab-" + t).style.display = tab === t ? "block" : "none"; });
+  document.querySelectorAll(".tab-btn").forEach((btn, i) => btn.classList.toggle("active", tabs[i] === tab));
   if (tab === "estado") renderEstado("todas");
+  if (tab === "resumen") renderResumen();
 }
 
 // ─── ESTADO FT ────────────────────────────────────────────────────────────────
