@@ -577,6 +577,7 @@ const CATALOGO = [
   { id:"nobilis_gumboro_d78",  nombre:"Nobilis Gumboro D78",      tipo:"Viva",       protege:["gumboro"],                    cepa:"D78",                                        via_label:"Oral / Spray / Óculo-nasal",            edad_min:"Día 1 (spray) / 7-28 d (oral)", programa:"Día 7-28 oral. Si AM variables: 2 dosis con 1 semana intervalo.",    resguardo:"Cero días",                               almacenamiento:"2-8°C. No congelar. Diluyente: 15-30°C.", proveedor:"MSD / Intervet Chile",   reg_sag:"1124-B",  postura:null,   notas:"Compatible con Nobilis IB Ma5 y ND Clone 30." },
   { id:"bronipra_1",           nombre:"Bronipra 1",               tipo:"Viva",       protege:["bronquitis"],                 cepa:"H120 (Massachusetts)",                       via_label:"Agua de bebida / Nebulización",         edad_min:"Día 1 (spray) / Día 7 (agua)", programa:"1 dosis/ave. Nebulización desde el 1er día; agua de bebida desde la 1ª semana.", resguardo:"Cero días",                               almacenamiento:"2-8°C. No congelar.",                     proveedor:"Veterquímica / HIPRA",   reg_sag:"0003-B",  postura:false,  notas:"No administrar durante postura. No coadministrar con otros productos." },
   { id:"nobilis_ib_ma5",       nombre:"Nobilis IB Ma5",           tipo:"Viva",       protege:["bronquitis"],                 cepa:"Ma5 Massachusetts",                          via_label:"Spray / Ocular-nasal / Agua",           edad_min:"Día 1",         programa:"Desde día 1. Ponedoras: día 1 + revacunación.",                       resguardo:"Cero días",                               almacenamiento:"2-8°C. No congelar. Diluyente: 15-30°C.", proveedor:"MSD / Intervet Chile",   reg_sag:"1155-B",  postura:true,   notas:"No causa reacciones adversas durante postura. Compatible con Nobilis Gumboro D78 y ND Clone 30." },
+  { id:"nobilis_ib_4_91",        nombre:"Nobilis IB 4-91",          tipo:"Viva",       protege:["bronquitis"],                 cepa:"4/91 (793B) — variante, ≥10³·⁶ DIE50",       via_label:"Spray / Gota ocular-nasal / Agua (desde 7 d)", edad_min:"Día 1", programa:"1 dosis/ave desde día 1 (spray, ocular o nasal); por agua desde los 7 días. MSD plantea combinarla con Nobilis IB Ma5 (protectotipo Mass + 4/91).", resguardo:"Cero días", almacenamiento:"2-8°C. Protegido de la luz. No congelar. Usar en 2 h tras reconstituir.", proveedor:"MSD / Intervet Chile", reg_sag:"—", postura:null, ft_pendiente:true, notas:"Datos de la ficha MSD internacional; ficha SAG Chile aún no cargada y N° de registro sin confirmar — verificar antes de indicar en un programa. Spray: 250-400 mL de agua/1.000 dosis. Agua: leche descremada 2 g/L ayuda a conservar el virus." },
   { id:"nobilis_ma5_clone30",  nombre:"Nobilis Ma5 + Clone 30",   tipo:"Viva",       protege:["bronquitis","newcastle"],      cepa:"BI Ma5 Mass + Newcastle Clone 30",           via_label:"Oral / Spray / Ocular / Nasal",         edad_min:"Día 1",         programa:"Desde el primer día de vida",                                        resguardo:"Cero días",                               almacenamiento:"2-8°C. No congelar. Diluyente: 15-30°C.", proveedor:"MSD / Intervet Chile",   reg_sag:"1158-B",  postura:false,  notas:"Combinada BI + Newcastle en una sola aplicación. No usar durante postura." },
   { id:"nobilis_ib_nd_eds",    nombre:"Nobilis IB + ND + EDS",    tipo:"Inactivada",  protege:["bronquitis","newcastle","eds"],      cepa:"BI M41 Mass + Newcastle Clone 30 + EDS BC14",    via_label:"IM / SC (0.5 mL)",                      edad_min:"16 semanas",    programa:"1 dosis. 16-20 sem, mínimo 4 sem antes de postura. Requiere primovacunación viva.", resguardo:"Cero días",                               almacenamiento:"2-8°C. No congelar. Usar en 3 h de abierto.",  proveedor:"MSD / Intervet Chile",   reg_sag:"1149-B",  postura:false,  notas:"Triple inactivada. Mejores resultados 6+ semanas después de primovacunación viva." },
   { id:"cevac_mass_l",          nombre:"CEVAC MASS L",             tipo:"Viva",        protege:["bronquitis"],                  cepa:"Mass B48 (Massachusetts)",                   via_label:"Agua / Intraocular / Spray",            edad_min:"Día 1",         programa:"Primovacunación días 1-4 (ocular o spray). Refuerzo 3-4 sem después (spray o agua). Pollas: 2º refuerzo a las 10-12 sem.",                                    resguardo:"Cero días",                               almacenamiento:"2-8°C. Protegido de la luz.",             proveedor:"Ceva Salud Animal",      reg_sag:"299-B",   postura:null,   notas:"Cepa Mass B48. 20×1.000 y 20×2.500 dosis. Aprobado SAG 17-01-2026." },
@@ -665,6 +666,10 @@ const RANGOS = {
   ],
   bronipra_1: [
     { label:"1ª dosis",    min:1,   max:21,  default:1,   nota:"Spray desde día 1; agua desde día 7. No usar durante postura" }
+  ],
+  nobilis_ib_4_91: [
+    { label:"1ª dosis",    min:1,   max:21,  default:1,   nota:"Spray/ocular desde día 1; agua desde día 7." },
+    { label:"Revacunación", min:21,  max:84,  default:35,  nota:"Según programa y presión de campo. Alternar con cepa Mass." }
   ],
   nobilis_ib_ma5: [
     { label:"1ª dosis",    min:1,   max:14,  default:1,   nota:"" },
@@ -922,6 +927,7 @@ const WARNS_VAC = {
 
 const NOTA_CEPA = {
   bronipra_1:          "Cepa Massachusetts (H120): protege bien frente al serotipo Mass, pero da protección cruzada limitada frente a variantes de campo (QX, 793B/4-91). Si hay presión de esas cepas en la zona, complementar con una vacuna variante (ej. Cevac Ibird).",
+  nobilis_ib_4_91:     "Cepa 4/91 (grupo 793B/GI-13). En Chile protegió frente a aislados GI-13 pero no frente a GI-16/Q1 (Guzmán 2019): amplía cobertura sobre Mass, no la reemplaza. Se usa junto a una cepa Mass. Ver anexo antigénico.",
   nobilis_ib_ma5:      "Cepa Massachusetts (Ma5): protección de serotipo. Verifique qué variantes circulan en la zona — puede requerir complemento con una vacuna variante (protectotipo 793B/4-91 o QX).",
   cevac_mass_l:        "Cepa Massachusetts (B48): protección de serotipo Mass. No protege frente a GI-16/Q1, el genotipo de campo prevalente en Chile desde 2008. Ver anexo antigénico.",
   cevac_ibird:         "Cepa variante 1/96 (grupo 793/B = GI-13). La ficha declara protección solo frente al grupo 793/B (y 793/B + Mass si se mezcla con Mass L). En Chile, la cepa 4/91 del mismo grupo protegió bien frente a aislados GI-13 pero mal frente a GI-16/Q1 (Guzmán 2019). Ver anexo antigénico.",
@@ -1450,7 +1456,6 @@ function switchTab(tab) {
 const SIN_FT = [
   { nombre: "CEVAC MD HVT",              tipo: "Vectorizada", proveedor: "Ceva Salud Animal Chile", protege: ["marek"],       reg_sag: "" },
   { nombre: "Avipro Salmonella",         tipo: "Viva",        proveedor: "Encipharm",               protege: ["salmonella"],  reg_sag: "" },
-  { nombre: "Nobilis IB 4/91",          tipo: "Viva",        proveedor: "MSD / Intervet Chile",    protege: ["bronquitis"],  reg_sag: "" },
   { nombre: "Corymune 4 (autovacuna)",  tipo: "Inactivada",  proveedor: "Autovacuna",              protege: ["coriza"],      reg_sag: "" },
 ];
 
@@ -1472,8 +1477,11 @@ function filtrarEstado(filtro, btn) {
 
 function renderEstado(filtro) {
   // Construir lista completa: con FT + sin FT
-  const conFT = CATALOGO.map(v => ({ ...v, ft: true }));
-  const sinFT = SIN_FT.map(v => ({ ...v, ft: false, cepa: "", reg_sag: v.reg_sag || "" }));
+  const conFT = CATALOGO.filter(v => !v.ft_pendiente).map(v => ({ ...v, ft: true }));
+  const sinFT = [
+    ...CATALOGO.filter(v => v.ft_pendiente).map(v => ({ ...v, ft: false })),
+    ...SIN_FT.map(v => ({ ...v, ft: false, cepa: "", reg_sag: v.reg_sag || "" }))
+  ];
   let todas = [...conFT, ...sinFT];
 
   // Ordenar: primero con FT, luego sin FT, ambos grupos alfabéticos
